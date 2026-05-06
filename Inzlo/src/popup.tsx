@@ -10,6 +10,7 @@ export default function Popup() {
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [searchTerm, setSearchTerm] = useState("") // 👈 Search state
 
   useEffect(() => {
     loadData()
@@ -48,20 +49,16 @@ export default function Popup() {
     audio.play().catch(() => {})
   }
 
-  // 👈 Reverse playback logic for copy
   const playCopySound = async () => {
     try {
       const context = new (window.AudioContext || (window as any).webkitAudioContext)()
       const response = await fetch(SUCCESS_SOUND_URL)
       const arrayBuffer = await response.arrayBuffer()
       const audioBuffer = await context.decodeAudioData(arrayBuffer)
-      
       const source = context.createBufferSource()
-      const gainNode = context.createGain() // 👈 GainNode 추가
-      
+      const gainNode = context.createGain()
       const channelCount = audioBuffer.numberOfChannels
       const newBuffer = context.createBuffer(channelCount, audioBuffer.length, audioBuffer.sampleRate)
-      
       for (let i = 0; i < channelCount; i++) {
         const channelData = audioBuffer.getChannelData(i)
         const reversedData = newBuffer.getChannelData(i)
@@ -69,17 +66,12 @@ export default function Popup() {
           reversedData[j] = channelData[k]
         }
       }
-      
       source.buffer = newBuffer
-      
-      // 👈 볼륨 조절 및 페이드 아웃 로직
       const duration = newBuffer.duration
-      gainNode.gain.setValueAtTime(0.3, context.currentTime) // 시작 볼륨을 조금 더 낮게 설정
-      gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + duration) // 끝으로 갈수록 부드럽게 사라짐
-      
+      gainNode.gain.setValueAtTime(0.3, context.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + duration)
       source.connect(gainNode)
       gainNode.connect(context.destination)
-      
       source.start()
     } catch (e) {
       console.error("Reverse audio failed", e)
@@ -100,7 +92,7 @@ export default function Popup() {
       newSelected.delete(id)
     } else {
       newSelected.add(id)
-      playCheckSound() // 👈 Play check sound
+      playCheckSound()
     }
     setSelectedIds(newSelected)
   }
@@ -127,6 +119,11 @@ export default function Popup() {
     }
   }
 
+  // 👈 Filter logic
+  const filteredPrompts = prompts.filter(p => 
+    p.content.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   return (
     <div style={{ padding: "16px", width: "340px", fontFamily: "'Inter', sans-serif", color: "#333" }}>
       <style>
@@ -151,6 +148,9 @@ export default function Popup() {
             color: #1890ff;
             text-align: center;
             width: 100%;
+          }
+          input::placeholder {
+            color: #ccc;
           }
         `}
       </style>
@@ -190,18 +190,43 @@ export default function Popup() {
         </div>
       </div>
 
+      {/* 👈 Search Bar */}
+      <div style={{ marginBottom: "16px" }}>
+        <input 
+          type="text"
+          placeholder="Search prompts..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            fontSize: "13px",
+            border: "1px solid #eee",
+            borderRadius: "8px",
+            outline: "none",
+            boxSizing: "border-box",
+            transition: "border-color 0.2s",
+            backgroundColor: "#fcfcfc"
+          }}
+          onFocus={(e) => e.target.style.borderColor = "#1890ff"}
+          onBlur={(e) => e.target.style.borderColor = "#eee"}
+        />
+      </div>
+
       <hr style={{ border: "0", borderTop: "1px solid #eee", marginBottom: "16px" }} />
 
       {loading ? (
         <p style={{ textAlign: "center", color: "#999" }}>Loading...</p>
-      ) : prompts.length === 0 ? (
+      ) : filteredPrompts.length === 0 ? (
         <div style={{ textAlign: "center", padding: "40px 20px", color: "#999" }}>
-          <p style={{ fontSize: "14px", marginBottom: "8px" }}>No insights captured yet.</p>
-          <p style={{ fontSize: "12px" }}>Drag text on any page and click Save!</p>
+          <p style={{ fontSize: "14px", marginBottom: "8px" }}>
+            {searchTerm ? "No matching prompts" : "No insights captured yet."}
+          </p>
+          {!searchTerm && <p style={{ fontSize: "12px" }}>Drag text on any page and click Save!</p>}
         </div>
       ) : (
-        <div style={{ maxHeight: "420px", overflowY: "auto", paddingRight: "4px" }}>
-          {prompts.map((p) => {
+        <div style={{ maxHeight: "400px", overflowY: "auto", paddingRight: "4px" }}>
+          {filteredPrompts.map((p) => {
             const isSelected = selectedIds.has(p.id)
             const isCopied = copiedId === p.id
             return (
@@ -279,6 +304,15 @@ export default function Popup() {
                     {p.content}
                   </div>
                 )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
               </div>
             )
           })}
