@@ -95,21 +95,22 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   const bgColor = isDarkMode ? "#1a1a1a" : "#ffffff"
   const textColor = isDarkMode ? "#ffffff" : "#333333"
   const itemBg = isDarkMode ? "#262626" : "#fafafa"
-  const borderColor = isDarkMode ? "#333" : "#f0f0f0"
+  const borderColor = isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"
   const headerSubColor = isDarkMode ? "#333" : "#e6f7ff"
 
   const panel = document.createElement("div")
   panel.id = PANEL_ID
   panel.style.cssText = `
-    position: fixed; top: 25px; right: 25px; width: 280px; 
-    max-height: 450px; background: ${bgColor}; color: ${textColor};
-    border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,${isDarkMode ? '0.4' : '0.2'}); 
-    z-index: 2147483646; padding: 18px; 
+    position: fixed; top: 80px; right: 20px; width: 340px; 
+    max-height: 500px; background: ${bgColor}; color: ${textColor};
+    border-radius: 16px; box-shadow: 0 12px 40px rgba(0,0,0,0.3); 
+    z-index: 1000000; padding: 20px; 
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    border: 1px solid ${isDarkMode ? "#333" : "rgba(0,0,0,0.05)"}; 
+    border: 1px solid ${borderColor}; 
     animation: inzloFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     transition: opacity 0.5s ease;
     display: flex; flex-direction: column;
+    box-sizing: border-box;
   `
 
   let hideTimer: any = null
@@ -147,14 +148,19 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 
   const header = document.createElement("div")
   header.style.cssText = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-shrink: 0;"
+  header.style.cssText = "display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; flex-shrink: 0;"
   header.innerHTML = `
-    <div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
       <div style="font-weight: 900; font-size: 14px; color: #1890ff; display: flex; align-items: center; gap: 4px;">
         <span>Inzlo Suggest</span>
         <span style="font-size: 10px; background: ${headerSubColor}; color: ${isDarkMode ? "#aaa" : "#1890ff"}; padding: 2px 6px; border-radius: 4px;">${context}</span>
       </div>
+      <div class="inzlo-close" style="cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #999; font-size: 18px; transition: all 0.2s;">×</div>
     </div>
-    <div class="inzlo-close" style="cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #999; font-size: 18px; transition: all 0.2s;">×</div>
+    <input type="text" class="inzlo-search" placeholder="Search prompts..." 
+      style="width: 100%; padding: 8px 12px; border-radius: 8px; border: none; box-shadow: inset 0 0 0 1px ${isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};
+      background: ${isDarkMode ? "#262626" : "#fff"}; color: ${textColor}; font-size: 13px; outline: none; box-sizing: border-box;"
+    >
   `
   header.querySelector(".inzlo-close").addEventListener("click", dismissPanel)
   panel.appendChild(header)
