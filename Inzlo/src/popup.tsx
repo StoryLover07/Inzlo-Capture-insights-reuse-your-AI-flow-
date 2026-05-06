@@ -226,7 +226,7 @@ export default function Popup() {
           position: "relative",
           border: isSelected ? "1px solid #1890ff" : (isDarkMode ? "1px solid #333" : "1px solid #f0f0f0"),
           borderRadius: "10px",
-          padding: "12px 16px 28px 16px", // 👈 padding 최적화
+          padding: "12px 16px 28px 16px",
           marginBottom: "10px",
           cursor: "pointer",
           fontSize: "13px",
@@ -240,22 +240,47 @@ export default function Popup() {
           overflow: "hidden"
         }}
       >
-        {/* ⚡ Left Edge Highlight Bar */}
+        {/* ⚡ Left Edge Highlight Bar (Visual Only) */}
         <div
-          onClick={(e) => toggleSelect(p.id, e)}
           style={{
             position: "absolute",
             left: 0,
             top: 0,
-            width: "6px", // 👈 에지 강조 두께
+            width: "6px",
             height: "100%",
             backgroundColor: isSelected ? "#1890ff" : "transparent",
             transition: "all 0.2s",
-            cursor: "pointer",
+            zIndex: 10
+          }}
+        />
+
+        {/* 🔘 Corner Floating Badge (Interaction) */}
+        <div
+          onClick={(e) => toggleSelect(p.id, e)}
+          style={{
+            position: "absolute",
+            right: "10px",
+            top: "10px",
+            width: "16px",
+            height: "16px",
+            borderRadius: "50%",
+            border: isSelected ? "none" : "1px solid #d9d9d9",
+            backgroundColor: isSelected ? "#1890ff" : "transparent",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.2s",
+            opacity: isSelected ? "1" : "0", // 👈 선택되지 않았을 때는 hover 시에만 보이도록 CSS에서 처리
             zIndex: 30
           }}
-          title="Select"
-        />
+          className="corner-badge"
+        >
+          {isSelected && (
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+              <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          )}
+        </div>
 
         {isCopied ? (
           <div className="blink-text">Copied!</div>
@@ -383,6 +408,7 @@ export default function Popup() {
           }
           .prompt-item:hover .source-layer { transform: translateY(0); }
           .prompt-item:hover .item-checkbox { opacity: 1 !important; }
+          .prompt-item:hover .corner-badge { opacity: 1 !important; }
           
           .arrow-icon {
             font-size: 10px;
