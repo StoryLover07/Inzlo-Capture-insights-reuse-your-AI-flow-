@@ -289,8 +289,15 @@ export default function Popup() {
   }
 
   return (
-    <div style={{ width: "340px", padding: "16px", fontFamily: "'Inter', sans-serif", backgroundColor: isDarkMode ? "#121212" : "#fff", color: isDarkMode ? "#fff" : "#333", minHeight: "550px", transition: "all 0.3s ease" }}>
+    <div style={{ 
+      width: "340px", padding: "16px", fontFamily: "'Inter', sans-serif", 
+      backgroundColor: isDarkMode ? "#121212" : "#fff", color: isDarkMode ? "#fff" : "#333", 
+      minHeight: "550px", transition: "all 0.3s ease",
+      border: "none", outline: "none", boxSizing: "border-box"
+    }}>
       <style>{`
+        body, html { margin: 0; padding: 0; overflow: hidden; background-color: ${isDarkMode ? "#121212" : "#fff"}; }
+        * { box-sizing: border-box; }
         @keyframes glow-animation { 0% { border-color: #f0f0f0; } 30% { border-color: #ff00ea; } 60% { border-color: #00d2ff; } 100% { border-color: #f0f0f0; } }
         @keyframes blink-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         .glow-item { animation: glow-animation 1s ease forwards; }
@@ -316,7 +323,7 @@ export default function Popup() {
         .section-header { display: flex; align-items: center; cursor: pointer; user-select: none; margin-bottom: 10px; padding: 0 4px; }
         .resizer-bar { height: 10px; width: 100%; cursor: row-resize; background: transparent; display: flex; align-items: center; justify-content: center; margin: 2px 0; }
         .resizer-bar::after { content: ""; width: 40px; height: 3px; background: #ddd; border-radius: 4px; }
-        input { box-sizing: border-box; } /* 👈 검색바 삐져나옴 문제 해결 */
+        input { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
 
