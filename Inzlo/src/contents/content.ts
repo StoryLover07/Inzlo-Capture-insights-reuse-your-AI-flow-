@@ -9,6 +9,14 @@ const CAPTURE_BTN_ID = "inzlo-capture-btn"
 
 // --- 🎯 Context & Suggestion Panel Logic ---
 
+const getDomain = (url: string) => {
+  try {
+    return new URL(url).hostname.replace("www.", "")
+  } catch (e) {
+    return ""
+  }
+}
+
 const detectContext = (url: string) => {
   const lowUrl = url.toLowerCase()
   if (lowUrl.includes("chatgpt.com") || lowUrl.includes("chat.openai.com") || lowUrl.includes("gemini.google.com") || lowUrl.includes("claude.ai")) return "AI"
@@ -20,7 +28,22 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   const existing = document.getElementById(PANEL_ID)
   if (existing) existing.remove()
 
-  const filtered = prompts.filter(p => (p.tag || "").toLowerCase() === context.toLowerCase()).slice(0, 3)
+  const currentUrl = window.location.href
+  const currentDomain = getDomain(currentUrl)
+
+  // 🧠 지능형 우선순위 필터링
+  // 1. 현재 도메인에서 저장된 항목 (최우선)
+  const siteSpecific = prompts.filter(p => p.url && getDomain(p.url) === currentDomain)
+  
+  // 2. 컨텍스트 태그와 일치하는 항목 (차선)
+  const contextSpecific = prompts.filter(p => 
+    (p.tag || "").toLowerCase() === context.toLowerCase() && 
+    !siteSpecific.find(s => s.id === p.id)
+  )
+
+  // 3. 결합 및 상위 3개 추출
+  const filtered = [...siteSpecific, ...contextSpecific].slice(0, 3)
+
   if (filtered.length === 0) return
 
   const bgColor = isDarkMode ? "#1a1a1a" : "#ffffff"
@@ -80,16 +103,29 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 
   const list = document.createElement("div")
   filtered.forEach(p => {
+    const isSiteSpecific = p.url && getDomain(p.url) === currentDomain
     const item = document.createElement("div")
     item.className = "inzlo-item"
-    item.style.cssText = `padding: 12px; margin-bottom: 8px; background: ${itemBg}; border-radius: 10px; font-size: 12px; color: ${isDarkMode ? "#ccc" : "#444"}; cursor: copy; transition: all 0.2s; border: 1px solid ${borderColor}; line-height: 1.5; position: relative; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;`
-    item.innerText = p.content
+    item.style.cssText = `padding: 12px; margin-bottom: 8px; background: ${itemBg}; border-radius: 10px; font-size: 12px; color: ${isDarkMode ? "#ccc" : "#444"}; cursor: copy; transition: all 0.2s; border: 1px solid ${isSiteSpecific ? '#1890ff' : borderColor}; line-height: 1.5; position: relative; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;`
+    
+    // 사이트 맞춤형 뱃지 (옵션)
+    if (isSiteSpecific) {
+      const badge = document.createElement("div")
+      badge.innerText = "Current Site"
+      badge.style.cssText = "position: absolute; top: 0; right: 0; font-size: 8px; background: #1890ff; color: white; padding: 2px 6px; border-bottom-left-radius: 8px;"
+      item.appendChild(badge)
+    }
+
+    const contentDiv = document.createElement("div")
+    contentDiv.innerText = p.content
+    item.appendChild(contentDiv)
+
     item.addEventListener("click", () => {
       navigator.clipboard.writeText(p.content)
-      const originalText = item.innerText
+      const originalText = contentDiv.innerText
       item.style.borderColor = "#34C759"
-      item.innerText = "✅ Copied!"
-      setTimeout(() => { item.innerText = originalText; item.style.borderColor = borderColor; }, 1500)
+      contentDiv.innerText = "✅ Copied!"
+      setTimeout(() => { contentDiv.innerText = originalText; item.style.borderColor = isSiteSpecific ? '#1890ff' : borderColor; }, 1500)
     })
     list.appendChild(item)
   })
@@ -100,7 +136,6 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 // --- ✂️ Selection & Dynamic Tag Bar Logic ---
 
 const handleMouseUp = (e: MouseEvent) => {
-  // 🎯 중요: 클릭 대상이 이미 인즐로 버튼 내부라면 무시 (사라짐 방지)
   const target = e.target as HTMLElement
   if (target.closest(`#${CAPTURE_BTN_ID}`)) return
 
@@ -178,7 +213,7 @@ const expandToTagBar = (btn: HTMLElement, text: string) => {
   input.onmousedown = (e) => e.stopPropagation()
   input.onclick = (e) => e.stopPropagation()
   input.onkeydown = (e) => {
-    e.stopPropagation() // 🎯 사이트의 다른 이벤트와 충돌 방지
+    e.stopPropagation()
     if (e.key === "Enter") {
       e.preventDefault()
       const val = input.value.trim()
@@ -191,7 +226,6 @@ const expandToTagBar = (btn: HTMLElement, text: string) => {
   container.appendChild(input)
 
   btn.appendChild(container)
-  // 입력창에 자동 포커스
   setTimeout(() => input.focus(), 300)
 }
 
@@ -212,7 +246,7 @@ const savePrompt = (content: string, tag: string) => {
       createdAt: Date.now()
     }
     chrome.storage.local.set({ inzlo_prompts: [newItem, ...list] }, () => {
-      init() // 패널 즉시 갱신
+      init()
     })
   })
 }
@@ -227,10 +261,7 @@ const init = () => {
     const duration = res.inzlo_suggest_duration || 10
     const isTaggedOnly = res.inzlo_suggest_tagged_only === true
     const prompts = res.inzlo_prompts || []
-    
-    // 일반 사이트에서도 뜰 수 있도록 조건 확인
     const shouldShow = isSuggestEnabled && context && (!isTaggedOnly || context !== "General")
-    
     if (shouldShow) createSuggestionPanel(prompts, context, isDarkMode, duration)
     else {
       const existing = document.getElementById(PANEL_ID)
@@ -240,8 +271,6 @@ const init = () => {
 }
 
 document.addEventListener("mouseup", handleMouseUp)
-
-// 다른 곳 클릭 시 버튼 제거 로직 복구 (하지만 버튼 자체 클릭은 제외)
 document.addEventListener("mousedown", (e) => {
   const target = e.target as HTMLElement
   if (target.closest(`#${CAPTURE_BTN_ID}`)) return
