@@ -204,27 +204,37 @@ export default function Popup() {
           .prompt-item:hover .copy-hint {
             opacity: 1;
           }
-          .source-link {
+          .source-tooltip {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 10px;
-            background: #fff;
-            padding: 2px 8px;
-            border-radius: 4px;
-            border: 1px solid #1890ff;
-            color: #1890ff;
-            text-decoration: none;
-            opacity: 0;
-            transition: all 0.2s;
-            z-index: 20;
-          }
-          .source-link:hover {
-            background: #1890ff;
+            bottom: 105%;
+            left: 0;
+            background: rgba(0, 0, 0, 0.85);
             color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 6px;
           }
-          .prompt-item:hover .source-link {
+          .source-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 20px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+          }
+          .prompt-item:hover .source-tooltip {
             opacity: 1;
+            transform: translateY(-4px);
           }
         `}
       </style>
@@ -401,17 +411,18 @@ export default function Popup() {
                         {p.content}
                       </div>
                     </div>
-                    {p.url && (
-                      <a 
-                        href={p.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="source-link"
-                        onClick={(e) => e.stopPropagation()} // 👈 복사 이벤트 방지
-                      >
-                        Source ↗
-                      </a>
+
+                    {/* 👈 Source Tooltip */}
+                    {p.source && (
+                      <div className="source-tooltip">
+                        <span style={{ fontWeight: "bold", color: "#1890ff" }}>{p.source}</span>
+                        <span>·</span>
+                        <span style={{ opacity: 0.8 }}>
+                          {p.url ? new URL(p.url).hostname : "local"}
+                        </span>
+                      </div>
                     )}
+                    
                     <div className="copy-hint">Click to Copy</div>
                   </>
                 )}
