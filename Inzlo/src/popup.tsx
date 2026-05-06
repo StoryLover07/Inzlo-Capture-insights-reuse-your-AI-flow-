@@ -255,6 +255,20 @@ export default function Popup() {
     playCheckSound()
   }
 
+  const handleDeleteTag = () => {
+    const isCustom = !defaultTags.includes(selectedTag)
+    if (!isCustom) return
+
+    if (confirm(`Delete all items tagged with "${selectedTag}"? This tag will also be removed.`)) {
+      const updated = prompts.filter(p => p.tag !== selectedTag)
+      chrome.storage.local.set({ inzlo_prompts: updated }, () => {
+        setPrompts(updated)
+        setSelectedTag("All")
+        playDeleteSound()
+      })
+    }
+  }
+
   const renderPromptItem = (p: Prompt) => {
     const isSelected = selectedIds.has(p.id)
     const isCopied = copiedId === p.id
@@ -686,6 +700,30 @@ export default function Popup() {
                   {t}
                 </button>
               ))}
+
+              {/* 🗑️ Delete Custom Tag Button */}
+              {!defaultTags.includes(selectedTag) && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDeleteTag(); }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "none",
+                    color: "#ff4d4f",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    padding: "0 8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "transform 0.2s"
+                  }}
+                  title={`Delete tag "${selectedTag}" and its items`}
+                  onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.2)"}
+                  onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+                >
+                  🗑️
+                </button>
+              )}
             </div>
           </div>
 
