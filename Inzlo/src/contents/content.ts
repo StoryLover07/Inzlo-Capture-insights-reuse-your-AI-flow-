@@ -10,43 +10,63 @@ const CAPTURE_BTN_ID = "inzlo-capture-btn"
 // --- 🎯 Context & Suggestion Panel Logic ---
 
 const detectContext = (url: string) => {
-  if (url.includes("chatgpt.com") || url.includes("chat.openai.com") || url.includes("gemini.google.com") || url.includes("claude.ai")) {
+  const lowUrl = url.toLowerCase()
+  if (lowUrl.includes("chatgpt.com") || lowUrl.includes("chat.openai.com") || lowUrl.includes("gemini.google.com") || lowUrl.includes("claude.ai")) {
     return "AI"
   }
-  if (url.includes("mail.google.com")) {
+  if (lowUrl.includes("mail.google.com")) {
     return "Email"
   }
   return null
 }
 
 const createSuggestionPanel = (prompts: any[], context: string) => {
-  if (document.getElementById(PANEL_ID)) return
+  // 이미 있으면 제거 후 갱신
+  const existing = document.getElementById(PANEL_ID)
+  if (existing) existing.remove()
 
-  const filtered = prompts.filter(p => (p.tag || "").toLowerCase() === context.toLowerCase()).slice(0, 3)
+  // 1. 컨텍스트와 정확히 일치하는 프롬프트 필터링
+  let filtered = prompts.filter(p => (p.tag || "").toLowerCase() === context.toLowerCase())
+  
+  // 2. 만약 해당 컨텍스트 항목이 부족하면 General 항목을 추가 (총 3개까지)
+  if (filtered.length < 3) {
+    const generalItems = prompts.filter(p => 
+      (p.tag || "").toLowerCase() === "general" && 
+      !filtered.find(f => f.id === p.id)
+    )
+    filtered = [...filtered, ...generalItems].slice(0, 3)
+  }
+
   if (filtered.length === 0) return
 
   const panel = document.createElement("div")
   panel.id = PANEL_ID
   panel.style.cssText = `
-    position: fixed; top: 20px; right: 20px; width: 260px; background: white;
-    border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 999999;
-    padding: 16px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    border: 1px solid #eee; animation: inzloFadeIn 0.3s ease;
+    position: fixed; top: 25px; right: 25px; width: 280px; background: white;
+    border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 2147483646;
+    padding: 18px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border: 1px solid rgba(0,0,0,0.05); animation: inzloFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   `
 
   const styleSheet = document.createElement("style")
   styleSheet.textContent = `
-    @keyframes inzloFadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    .inzlo-item:hover { background: #f0f7ff !important; color: #1890ff !important; }
-    .inzlo-close:hover { color: #ff4d4f !important; transform: scale(1.1); }
+    @keyframes inzloFadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    .inzlo-item:hover { background: #f0f7ff !important; border-color: #1890ff !important; transform: translateY(-1px); }
+    .inzlo-item:active { transform: scale(0.98); }
+    .inzlo-close:hover { background: #fff1f0; color: #ff4d4f !important; }
   `
   document.head.appendChild(styleSheet)
 
   const header = document.createElement("div")
-  header.style.cssText = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"
+  header.style.cssText = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;"
   header.innerHTML = `
-    <span style="font-weight: 800; font-size: 13px; color: #333;">💡 Suggested Prompts</span>
-    <span class="inzlo-close" style="cursor: pointer; font-size: 18px; color: #ccc; transition: all 0.2s;">×</span>
+    <div>
+      <div style="font-weight: 900; font-size: 14px; color: #1890ff; display: flex; align-items: center; gap: 4px;">
+        <span>Inzlo Suggest</span>
+        <span style="font-size: 10px; background: #e6f7ff; padding: 2px 6px; border-radius: 4px;">${context}</span>
+      </div>
+    </div>
+    <div class="inzlo-close" style="cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #999; font-size: 18px; transition: all 0.2s;">×</div>
   `
   header.querySelector(".inzlo-close").addEventListener("click", () => panel.remove())
   panel.appendChild(header)
@@ -55,13 +75,23 @@ const createSuggestionPanel = (prompts: any[], context: string) => {
   filtered.forEach(p => {
     const item = document.createElement("div")
     item.className = "inzlo-item"
-    item.style.cssText = "padding: 10px; margin-bottom: 6px; background: #fafafa; border-radius: 8px; font-size: 12px; color: #666; cursor: copy; transition: all 0.2s; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; border: 1px solid #f0f0f0;"
+    item.style.cssText = `
+      padding: 12px; margin-bottom: 8px; background: #fff; border-radius: 10px;
+      font-size: 12px; color: #444; cursor: copy; transition: all 0.2s;
+      border: 1px solid #f0f0f0; line-height: 1.5; position: relative;
+      overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    `
     item.innerText = p.content
     item.addEventListener("click", () => {
       navigator.clipboard.writeText(p.content)
       const originalText = item.innerText
-      item.innerText = "✅ Copied!"
-      setTimeout(() => { item.innerText = originalText }, 1000)
+      item.style.borderColor = "#34C759"
+      item.innerText = "✅ Copied to clipboard!"
+      setTimeout(() => { 
+        item.innerText = originalText
+        item.style.borderColor = "#f0f0f0"
+      }, 1500)
     })
     list.appendChild(item)
   })
@@ -72,66 +102,48 @@ const createSuggestionPanel = (prompts: any[], context: string) => {
 // --- ✂️ Selection & Capture Logic ---
 
 const handleMouseUp = (e: MouseEvent) => {
-  // 선택 영역을 가져올 때 약간의 딜레이를 주어 안정성 확보
   setTimeout(() => {
     const selection = window.getSelection()
     const text = selection?.toString().trim()
 
-    // 10글자 미만이거나 비어있으면 표시 안 함 (노이즈 방지)
     if (!text || text.length < 2) {
       const existing = document.getElementById(CAPTURE_BTN_ID)
       if (existing) existing.remove()
       return
     }
 
-    // 이미 버튼이 있으면 위치만 업데이트하기 위해 제거 후 새로 생성
     const oldBtn = document.getElementById(CAPTURE_BTN_ID)
     if (oldBtn) oldBtn.remove()
 
     try {
       const range = selection.getRangeAt(0)
       const rect = range.getBoundingClientRect()
-
       if (rect.width === 0) return
 
       const btn = document.createElement("div")
       btn.id = CAPTURE_BTN_ID
       btn.innerText = "Inzlo"
       btn.style.cssText = `
-        position: absolute;
-        top: ${rect.top + window.scrollY - 40}px;
+        position: absolute; top: ${rect.top + window.scrollY - 45}px;
         left: ${rect.left + window.scrollX + rect.width / 2 - 30}px;
-        padding: 8px 14px;
-        background: #1890ff;
-        color: white;
-        font-size: 12px;
-        font-weight: 800;
-        border-radius: 20px;
-        cursor: pointer;
-        z-index: 2147483647;
-        box-shadow: 0 6px 16px rgba(24,144,255,0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: inzloFadeIn 0.2s ease;
-        border: 2px solid white;
-        pointer-events: auto;
+        padding: 8px 16px; background: #1890ff; color: white;
+        font-size: 13px; font-weight: 900; border-radius: 24px;
+        cursor: pointer; z-index: 2147483647;
+        box-shadow: 0 8px 20px rgba(24,144,255,0.4);
+        display: flex; align-items: center; justify-content: center;
+        animation: inzloFadeIn 0.2s ease; border: 2.5px solid white;
       `
 
       btn.onmousedown = (event) => event.stopPropagation()
       btn.onclick = (event) => {
-        event.preventDefault()
-        event.stopPropagation()
+        event.preventDefault(); event.stopPropagation()
         savePrompt(text)
         btn.innerText = "✅ Saved!"
         setTimeout(() => btn.remove(), 1000)
       }
       document.body.appendChild(btn)
-      console.log("Inzlo capture button created at:", btn.style.top, btn.style.left)
-    } catch (err) {
-      console.error("Inzlo capture error:", err)
-    }
-  }, 50)
+    } catch (err) {}
+  }, 100)
 }
 
 const savePrompt = (content: string) => {
@@ -145,7 +157,10 @@ const savePrompt = (content: string) => {
       source: "Inzlo Capture",
       url: window.location.href
     }
-    chrome.storage.local.set({ inzlo_prompts: [newItem, ...list] })
+    chrome.storage.local.set({ inzlo_prompts: [newItem, ...list] }, () => {
+      // 저장 후 패널 즉시 갱신
+      init()
+    })
   })
 }
 
@@ -153,20 +168,28 @@ const savePrompt = (content: string) => {
 
 const init = () => {
   const context = detectContext(window.location.href)
+  if (!context) return
+
   chrome.storage.local.get(["inzlo_prompts"], (res) => {
     const prompts = res.inzlo_prompts || []
-    if (context) createSuggestionPanel(prompts, context)
+    createSuggestionPanel(prompts, context)
   })
 }
 
 document.addEventListener("mouseup", handleMouseUp)
 
-init()
+// 초기 로드 시점 조절
+if (document.readyState === "complete") {
+  init()
+} else {
+  window.addEventListener("load", init)
+}
 
+// URL 변경 감지 최적화
 let lastUrl = window.location.href
-new MutationObserver(() => {
+setInterval(() => {
   if (window.location.href !== lastUrl) {
     lastUrl = window.location.href
     init()
   }
-}).observe(document, { subtree: true, childList: true })
+}, 1000)
