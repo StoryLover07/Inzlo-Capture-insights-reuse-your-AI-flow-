@@ -390,9 +390,9 @@ export default function Popup() {
       )}
 
       {contextMenu && (
-        <div style={{ position: "fixed", top: contextMenu.y, left: contextMenu.x, backgroundColor: isDarkMode ? "#262626" : "#fff", border: `1px solid ${isDarkMode ? "#444" : "#eee"}`, boxShadow: "0 4px 12px rgba(0,0,0,0.15)", borderRadius: "8px", zIndex: 9999, padding: "4px", minWidth: "120px", animation: "fadeIn 0.1s ease" }} onClick={(e) => e.stopPropagation()}>
-          <div onClick={() => handleDeleteTag(contextMenu.tag)} onMouseOver={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? "#333" : "#fff1f0"} onMouseOut={(e) => e.currentTarget.style.backgroundColor = "transparent"} style={{ padding: "8px 12px", fontSize: "12px", color: "#ff4d4f", cursor: "pointer", borderRadius: "4px", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span>🗑️</span> Delete Tag
+        <div style={{ position: "fixed", top: contextMenu.y, left: contextMenu.x, backgroundColor: isDarkMode ? "#262626" : "#fff", border: `1px solid ${isDarkMode ? "#444" : "#eee"}`, boxShadow: "0 4px 12px rgba(0,0,0,0.15)", borderRadius: "8px", zIndex: 9999, padding: "2px", minWidth: "90px", animation: "fadeIn 0.1s ease" }} onClick={(e) => e.stopPropagation()}>
+          <div onClick={() => handleDeleteTag(contextMenu.tag)} onMouseOver={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? "#333" : "#fff1f0"} onMouseOut={(e) => e.currentTarget.style.backgroundColor = "transparent"} style={{ padding: "6px 10px", fontSize: "11px", color: "#ff4d4f", cursor: "pointer", borderRadius: "6px", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
+            <span>🗑️</span> Delete
           </div>
         </div>
       )}
