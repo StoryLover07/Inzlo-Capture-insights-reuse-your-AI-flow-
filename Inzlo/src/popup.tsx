@@ -19,6 +19,7 @@ export default function Popup() {
   const [currentContext, setCurrentContext] = useState("ALL")
   const [showSettings, setShowSettings] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isSuggestEnabled, setIsSuggestEnabled] = useState(true) // 👈 제안 패널 활성화 상태
   const [recExpanded, setRecExpanded] = useState(true)
   const [othersExpanded, setOthersExpanded] = useState(true)
   const [recHeight, setRecHeight] = useState(200) // 👈 추천 목록 높이 상태
@@ -51,9 +52,12 @@ export default function Popup() {
   }, [isDragging])
 
   const loadSettings = () => {
-    chrome.storage.local.get(["inzlo_darkmode"], (res) => {
+    chrome.storage.local.get(["inzlo_darkmode", "inzlo_suggest_enabled"], (res) => {
       if (res.inzlo_darkmode !== undefined) {
         setIsDarkMode(res.inzlo_darkmode)
+      }
+      if (res.inzlo_suggest_enabled !== undefined) {
+        setIsSuggestEnabled(res.inzlo_suggest_enabled)
       }
     })
   }
@@ -61,7 +65,13 @@ export default function Popup() {
   const toggleDarkMode = (val: boolean) => {
     setIsDarkMode(val)
     chrome.storage.local.set({ inzlo_darkmode: val })
-    playCheckSound() // 👈 효과음 추가
+    playCheckSound()
+  }
+
+  const toggleSuggest = (val: boolean) => {
+    setIsSuggestEnabled(val)
+    chrome.storage.local.set({ inzlo_suggest_enabled: val })
+    playCheckSound()
   }
 
   const detectContext = () => {
@@ -560,13 +570,25 @@ export default function Popup() {
       {showSettings ? (
         <div className="settings-view" style={{ animation: "fadeIn 0.3s" }}>
           <h3 style={{ fontSize: "14px", marginBottom: "20px" }}>Settings</h3>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px", backgroundColor: isDarkMode ? "#1a1a1a" : "#fafafa", borderRadius: "10px" }}>
-            <span style={{ fontSize: "13px", fontWeight: "600" }}>Dark Mode</span>
-            <label className="apple-switch">
-              <input type="checkbox" checked={isDarkMode} onChange={(e) => toggleDarkMode(e.target.checked)} />
-              <span className="slider"></span>
-            </label>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px", backgroundColor: isDarkMode ? "#1a1a1a" : "#fafafa", borderRadius: "10px" }}>
+              <span style={{ fontSize: "13px", fontWeight: "600" }}>Dark Mode</span>
+              <label className="apple-switch">
+                <input type="checkbox" checked={isDarkMode} onChange={(e) => toggleDarkMode(e.target.checked)} />
+                <span className="slider"></span>
+              </label>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px", backgroundColor: isDarkMode ? "#1a1a1a" : "#fafafa", borderRadius: "10px" }}>
+              <span style={{ fontSize: "13px", fontWeight: "600" }}>Show Suggestions</span>
+              <label className="apple-switch">
+                <input type="checkbox" checked={isSuggestEnabled} onChange={(e) => toggleSuggest(e.target.checked)} />
+                <span className="slider"></span>
+              </label>
+            </div>
           </div>
+          
           <p style={{ fontSize: "11px", color: "#999", marginTop: "40px", textAlign: "center" }}>Inzlo v1.2 · Pro Edition</p>
         </div>
       ) : (

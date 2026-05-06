@@ -160,11 +160,18 @@ const savePrompt = (content: string) => {
 
 const init = () => {
   const context = detectContext(window.location.href)
-  if (!context) return
-
-  chrome.storage.local.get(["inzlo_prompts"], (res) => {
+  
+  chrome.storage.local.get(["inzlo_prompts", "inzlo_suggest_enabled"], (res) => {
+    const isSuggestEnabled = res.inzlo_suggest_enabled !== false // 기본값 true
     const prompts = res.inzlo_prompts || []
-    createSuggestionPanel(prompts, context)
+    
+    if (context && isSuggestEnabled) {
+      createSuggestionPanel(prompts, context)
+    } else {
+      // 꺼져있거나 컨텍스트가 없으면 기존 패널 제거
+      const existing = document.getElementById(PANEL_ID)
+      if (existing) existing.remove()
+    }
   })
 }
 
