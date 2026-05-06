@@ -20,7 +20,7 @@ const detectContext = (url: string) => {
   return null
 }
 
-const createSuggestionPanel = (prompts: any[], context: string) => {
+const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: boolean) => {
   // 이미 있으면 일단 제거
   const existing = document.getElementById(PANEL_ID)
   if (existing) existing.remove()
@@ -31,21 +31,30 @@ const createSuggestionPanel = (prompts: any[], context: string) => {
   // 일치하는 항목이 없으면 패널을 띄우지 않음
   if (filtered.length === 0) return
 
+  const bgColor = isDarkMode ? "#1a1a1a" : "#ffffff"
+  const textColor = isDarkMode ? "#ffffff" : "#333333"
+  const itemBg = isDarkMode ? "#262626" : "#fafafa"
+  const borderColor = isDarkMode ? "#333" : "#f0f0f0"
+  const headerSubColor = isDarkMode ? "#333" : "#e6f7ff"
+
   const panel = document.createElement("div")
   panel.id = PANEL_ID
   panel.style.cssText = `
-    position: fixed; top: 25px; right: 25px; width: 280px; background: white;
-    border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); z-index: 2147483646;
-    padding: 18px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    border: 1px solid rgba(0,0,0,0.05); animation: inzloFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: fixed; top: 25px; right: 25px; width: 280px; 
+    background: ${bgColor}; color: ${textColor};
+    border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,${isDarkMode ? '0.4' : '0.2'}); 
+    z-index: 2147483646; padding: 18px; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border: 1px solid ${isDarkMode ? "#333" : "rgba(0,0,0,0.05)"}; 
+    animation: inzloFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   `
 
   const styleSheet = document.createElement("style")
   styleSheet.textContent = `
     @keyframes inzloFadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-    .inzlo-item:hover { background: #f0f7ff !important; border-color: #1890ff !important; transform: translateY(-1px); }
+    .inzlo-item:hover { background: ${isDarkMode ? "#333" : "#f0f7ff"} !important; border-color: #1890ff !important; transform: translateY(-1px); }
     .inzlo-item:active { transform: scale(0.98); }
-    .inzlo-close:hover { background: #fff1f0; color: #ff4d4f !important; }
+    .inzlo-close:hover { background: ${isDarkMode ? "#333" : "#fff1f0"}; color: #ff4d4f !important; }
   `
   document.head.appendChild(styleSheet)
 
@@ -55,7 +64,7 @@ const createSuggestionPanel = (prompts: any[], context: string) => {
     <div>
       <div style="font-weight: 900; font-size: 14px; color: #1890ff; display: flex; align-items: center; gap: 4px;">
         <span>Inzlo Suggest</span>
-        <span style="font-size: 10px; background: #e6f7ff; padding: 2px 6px; border-radius: 4px;">${context}</span>
+        <span style="font-size: 10px; background: ${headerSubColor}; color: ${isDarkMode ? "#aaa" : "#1890ff"}; padding: 2px 6px; border-radius: 4px;">${context}</span>
       </div>
     </div>
     <div class="inzlo-close" style="cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #999; font-size: 18px; transition: all 0.2s;">×</div>
@@ -68,9 +77,9 @@ const createSuggestionPanel = (prompts: any[], context: string) => {
     const item = document.createElement("div")
     item.className = "inzlo-item"
     item.style.cssText = `
-      padding: 12px; margin-bottom: 8px; background: #fff; border-radius: 10px;
-      font-size: 12px; color: #444; cursor: copy; transition: all 0.2s;
-      border: 1px solid #f0f0f0; line-height: 1.5; position: relative;
+      padding: 12px; margin-bottom: 8px; background: ${itemBg}; border-radius: 10px;
+      font-size: 12px; color: ${isDarkMode ? "#ccc" : "#444"}; cursor: copy; transition: all 0.2s;
+      border: 1px solid ${borderColor}; line-height: 1.5; position: relative;
       overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
       -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     `
@@ -79,10 +88,10 @@ const createSuggestionPanel = (prompts: any[], context: string) => {
       navigator.clipboard.writeText(p.content)
       const originalText = item.innerText
       item.style.borderColor = "#34C759"
-      item.innerText = "✅ Copied to clipboard!"
+      item.innerText = "✅ Copied!"
       setTimeout(() => { 
         item.innerText = originalText
-        item.style.borderColor = "#f0f0f0"
+        item.style.borderColor = borderColor
       }, 1500)
     })
     list.appendChild(item)
@@ -161,14 +170,14 @@ const savePrompt = (content: string) => {
 const init = () => {
   const context = detectContext(window.location.href)
   
-  chrome.storage.local.get(["inzlo_prompts", "inzlo_suggest_enabled"], (res) => {
-    const isSuggestEnabled = res.inzlo_suggest_enabled !== false // 기본값 true
+  chrome.storage.local.get(["inzlo_prompts", "inzlo_suggest_enabled", "inzlo_darkmode"], (res) => {
+    const isSuggestEnabled = res.inzlo_suggest_enabled !== false
+    const isDarkMode = res.inzlo_darkmode === true
     const prompts = res.inzlo_prompts || []
     
     if (context && isSuggestEnabled) {
-      createSuggestionPanel(prompts, context)
+      createSuggestionPanel(prompts, context, isDarkMode)
     } else {
-      // 꺼져있거나 컨텍스트가 없으면 기존 패널 제거
       const existing = document.getElementById(PANEL_ID)
       if (existing) existing.remove()
     }
