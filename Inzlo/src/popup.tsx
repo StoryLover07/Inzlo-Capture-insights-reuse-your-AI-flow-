@@ -123,12 +123,18 @@ export default function Popup() {
 
   // 👈 Enhanced filter logic (Tag + Search)
   const filteredPrompts = prompts.filter(p => {
-    const matchesTag = selectedTag === "All" || p.tag === selectedTag
+    const itemTag = p.tag || "General" // Handle missing tags as General
+    const matchesTag = selectedTag === "All" || itemTag === selectedTag
     const matchesSearch = p.content.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesTag && matchesSearch
   })
 
-  const tags = ["All", "AI", "Email", "Code", "General"]
+  const tags = ["All", "General", "AI", "Email", "Code"] // 👈 Reordered tags
+
+  const handleTagClick = (tag: string) => {
+    setSelectedTag(tag)
+    playCheckSound() // 👈 Play sound on tag click
+  }
 
   return (
     <div style={{ padding: "16px", width: "340px", fontFamily: "'Inter', sans-serif", color: "#333" }}>
@@ -217,7 +223,7 @@ export default function Popup() {
           <button 
             key={t}
             className={`tag-btn ${selectedTag === t ? 'active' : ''}`}
-            onClick={() => setSelectedTag(t)}
+            onClick={() => handleTagClick(t)}
           >
             {t}
           </button>
