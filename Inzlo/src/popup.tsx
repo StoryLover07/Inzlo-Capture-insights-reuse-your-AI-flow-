@@ -322,7 +322,7 @@ export default function Popup() {
           {!searchTerm && selectedTag === "All" && <p style={{ fontSize: "12px" }}>Drag text on any page and click Save!</p>}
         </div>
       ) : (
-        <div style={{ maxHeight: "360px", overflowY: "auto", paddingRight: "4px" }}>
+        <div style={{ maxHeight: "360px", overflowY: "auto", paddingRight: "4px", paddingTop: "30px" }}>
           {filteredPrompts.map((p) => {
             const isSelected = selectedIds.has(p.id)
             const isCopied = copiedId === p.id
