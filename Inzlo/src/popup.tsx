@@ -3,7 +3,10 @@ import { useEffect, useState } from "react"
 type Prompt = {
   id: string
   content: string
-  tag?: string // 👈 태그 필드 추가
+  tag?: string
+  source?: string // 👈 추가
+  url?: string    // 👈 추가
+  title?: string  // 👈 추가
   createdAt: number
 }
 
@@ -361,19 +364,38 @@ export default function Popup() {
                         fontSize: "10px", 
                         color: "#1890ff", 
                         fontWeight: "bold", 
-                        marginBottom: "2px",
+                        marginBottom: "4px",
                         textTransform: "uppercase"
                       }}>
-                        [{p.tag || "General"}]
+                        [{p.tag || "General"} {p.source ? `· ${p.source}` : ""}]
                       </div>
                       <div style={{ 
                         overflow: "hidden", 
                         display: "-webkit-box", 
                         WebkitLineClamp: 3, 
                         WebkitBoxOrient: "vertical",
-                        wordBreak: "break-all"
+                        wordBreak: "break-all",
+                        marginBottom: "4px"
                       }}>
                         {p.content}
+                      </div>
+                      {/* 👈 Metadata line */}
+                      <div style={{ 
+                        fontSize: "9px", 
+                        color: "#999", 
+                        display: "flex", 
+                        gap: "4px" 
+                      }}>
+                        <span>{p.source || "Web"}</span>
+                        <span>·</span>
+                        <span style={{ 
+                          maxWidth: "150px", 
+                          overflow: "hidden", 
+                          textOverflow: "ellipsis", 
+                          whiteSpace: "nowrap" 
+                        }}>
+                          {p.url ? new URL(p.url).hostname : "local"}
+                        </span>
                       </div>
                     </div>
                     <div className="copy-hint">Click to Copy</div>

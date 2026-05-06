@@ -52,13 +52,29 @@ function showButton(x: number, y: number) {
         return
       }
 
-      // 👉 태그 입력 받기 (MVP: prompt 사용)
+      // 👉 태그 입력 받기
       const userTag = prompt("Enter tag (AI / Email / Code):", "General") || "General"
+
+      // 👉 출처 정보 수집
+      const url = window.location.href
+      const title = document.title
+      let source = "Web"
+
+      if (url.includes("chatgpt.com") || url.includes("chat.openai.com")) {
+        source = "ChatGPT"
+      } else if (url.includes("claude.ai")) {
+        source = "Claude"
+      } else if (url.includes("gemini.google.com")) {
+        source = "Gemini"
+      }
 
       const newItem = {
         id: Date.now().toString(),
         content: selectedText,
-        tag: userTag, // 👈 태그 추가
+        tag: userTag,
+        source: source, // 👈 출처 추가
+        url: url,       // 👈 URL 추가
+        title: title,   // 👈 제목 추가
         createdAt: Date.now()
       }
 
