@@ -63,6 +63,7 @@ function showButton(x: number, y: number) {
       // 👉 저장
       chrome.storage.local.set({ inzlo_prompts: updated }, () => {
         console.log("Saved successfully:", selectedText)
+        alert("Inzlo: Saved successfully!")
       })
     })
 
