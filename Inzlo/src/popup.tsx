@@ -21,6 +21,7 @@ export default function Popup() {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [isSuggestEnabled, setIsSuggestEnabled] = useState(true)
   const [suggestDuration, setSuggestDuration] = useState(10) // 👈 노출 시간 (초)
+  const [isTaggedOnly, setIsTaggedOnly] = useState(false) // 👈 특정 태그 사이트 전용 상태
   const [recExpanded, setRecExpanded] = useState(true)
   const [othersExpanded, setOthersExpanded] = useState(true)
   const [recHeight, setRecHeight] = useState(200) // 👈 추천 목록 높이 상태
@@ -53,7 +54,7 @@ export default function Popup() {
   }, [isDragging])
 
   const loadSettings = () => {
-    chrome.storage.local.get(["inzlo_darkmode", "inzlo_suggest_enabled", "inzlo_suggest_duration"], (res) => {
+    chrome.storage.local.get(["inzlo_darkmode", "inzlo_suggest_enabled", "inzlo_suggest_duration", "inzlo_suggest_tagged_only"], (res) => {
       if (res.inzlo_darkmode !== undefined) {
         setIsDarkMode(res.inzlo_darkmode)
       }
@@ -62,6 +63,9 @@ export default function Popup() {
       }
       if (res.inzlo_suggest_duration !== undefined) {
         setSuggestDuration(res.inzlo_suggest_duration)
+      }
+      if (res.inzlo_suggest_tagged_only !== undefined) {
+        setIsTaggedOnly(res.inzlo_suggest_tagged_only)
       }
     })
   }
@@ -75,6 +79,12 @@ export default function Popup() {
   const toggleSuggest = (val: boolean) => {
     setIsSuggestEnabled(val)
     chrome.storage.local.set({ inzlo_suggest_enabled: val })
+    playCheckSound()
+  }
+
+  const toggleTaggedOnly = (val: boolean) => {
+    setIsTaggedOnly(val)
+    chrome.storage.local.set({ inzlo_suggest_tagged_only: val })
     playCheckSound()
   }
 
@@ -593,6 +603,14 @@ export default function Popup() {
               <span style={{ fontSize: "13px", fontWeight: "600" }}>Show Suggestions</span>
               <label className="apple-switch">
                 <input type="checkbox" checked={isSuggestEnabled} onChange={(e) => toggleSuggest(e.target.checked)} />
+                <span className="slider"></span>
+              </label>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px", backgroundColor: isDarkMode ? "#1a1a1a" : "#fafafa", borderRadius: "10px" }}>
+              <span style={{ fontSize: "13px", fontWeight: "600" }}>Only on AI/Email Sites</span>
+              <label className="apple-switch">
+                <input type="checkbox" checked={isTaggedOnly} onChange={(e) => toggleTaggedOnly(e.target.checked)} />
                 <span className="slider"></span>
               </label>
             </div>

@@ -181,13 +181,20 @@ const savePrompt = (content: string) => {
 const init = () => {
   const context = detectContext(window.location.href)
   
-  chrome.storage.local.get(["inzlo_prompts", "inzlo_suggest_enabled", "inzlo_darkmode", "inzlo_suggest_duration"], (res) => {
+  chrome.storage.local.get(["inzlo_prompts", "inzlo_suggest_enabled", "inzlo_darkmode", "inzlo_suggest_duration", "inzlo_suggest_tagged_only"], (res) => {
     const isSuggestEnabled = res.inzlo_suggest_enabled !== false
     const isDarkMode = res.inzlo_darkmode === true
-    const duration = res.inzlo_suggest_duration || 10 // 기본값 10초
+    const duration = res.inzlo_suggest_duration || 10
+    const isTaggedOnly = res.inzlo_suggest_tagged_only === true // 👈 특정 사이트 한정 여부
     const prompts = res.inzlo_prompts || []
     
-    if (context && isSuggestEnabled) {
+    // 🎯 필터링 조건: 
+    // 1. 전체 기능이 켜져 있어야 함
+    // 2. 컨텍스트가 존재해야 함
+    // 3. '특정 사이트 한정'이 켜져 있다면, 컨텍스트가 General이면 안 됨
+    const shouldShow = isSuggestEnabled && context && (!isTaggedOnly || context !== "General")
+    
+    if (shouldShow) {
       createSuggestionPanel(prompts, context, isDarkMode, duration)
     } else {
       const existing = document.getElementById(PANEL_ID)
