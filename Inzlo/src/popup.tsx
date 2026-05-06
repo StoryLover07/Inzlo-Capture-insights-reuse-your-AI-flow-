@@ -219,13 +219,14 @@ export default function Popup() {
             font-size: 11px;
             white-space: nowrap;
             opacity: 0;
-            pointer-events: none;
             transition: all 0.2s ease;
             z-index: 100;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
             gap: 6px;
+            text-decoration: none; /* 👈 링크 밑줄 제거 */
+            cursor: pointer;      /* 👈 포인터 커서 추가 */
           }
           .source-tooltip::after {
             content: '';
@@ -417,15 +418,21 @@ export default function Popup() {
                       </div>
                     </div>
 
-                    {/* 👈 Source Tooltip */}
+                    {/* 👈 Source Tooltip (Linkable) */}
                     {p.source && (
-                      <div className="source-tooltip">
+                      <a 
+                        href={p.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="source-tooltip"
+                        onClick={(e) => e.stopPropagation()} // 👈 복사 이벤트 방지
+                      >
                         <span style={{ fontWeight: "bold", color: "#1890ff" }}>{p.source}</span>
                         <span>·</span>
                         <span style={{ opacity: 0.8 }}>
                           {p.url ? new URL(p.url).hostname : "local"}
                         </span>
-                      </div>
+                      </a>
                     )}
                     
                     <div className="copy-hint">Click to Copy</div>
