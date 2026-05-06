@@ -155,6 +155,11 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
       item.appendChild(badge)
     }
 
+    const tagDiv = document.createElement("div")
+    tagDiv.innerText = `[${p.tag || "General"}]`
+    tagDiv.style.cssText = `font-size: 9px; font-weight: 800; color: #1890ff; margin-bottom: 4px; text-transform: uppercase;`
+    item.appendChild(tagDiv)
+
     const contentDiv = document.createElement("div")
     contentDiv.innerText = p.content
     item.appendChild(contentDiv)
