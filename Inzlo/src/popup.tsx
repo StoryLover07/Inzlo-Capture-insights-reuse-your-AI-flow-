@@ -19,14 +19,36 @@ export default function Popup() {
   const [currentContext, setCurrentContext] = useState("ALL")
   const [showSettings, setShowSettings] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const [recExpanded, setRecExpanded] = useState(true) // 👈 Recommended section toggle
-  const [othersExpanded, setOthersExpanded] = useState(true) // 👈 Others section toggle
+  const [recExpanded, setRecExpanded] = useState(true)
+  const [othersExpanded, setOthersExpanded] = useState(true)
+  const [recHeight, setRecHeight] = useState(200) // 👈 추천 목록 높이 상태
+  const [isDragging, setIsDragging] = useState(false) // 👈 드래그 상태
 
   useEffect(() => {
     loadData()
     detectContext()
     loadSettings()
   }, [])
+
+  // 👈 드래그 로직
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return
+      // 팝업 내 마우스 위치 계산 (최소 50px ~ 최대 400px 제한)
+      const newHeight = Math.max(50, Math.min(400, e.clientY - 150))
+      setRecHeight(newHeight)
+    }
+    const handleMouseUp = () => setIsDragging(false)
+
+    if (isDragging) {
+      window.addEventListener("mousemove", handleMouseMove)
+      window.addEventListener("mouseup", handleMouseUp)
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove)
+      window.removeEventListener("mouseup", handleMouseUp)
+    }
+  }, [isDragging])
 
   const loadSettings = () => {
     chrome.storage.local.get(["inzlo_darkmode"], (res) => {
@@ -433,6 +455,27 @@ export default function Popup() {
             border: none;
             background-color: transparent;
           }
+          .resizer-bar {
+            height: 4px;
+            width: 100%;
+            cursor: row-resize;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 4px 0;
+            transition: background 0.2s;
+          }
+          .resizer-bar:hover { background: rgba(24, 144, 255, 0.1); }
+          .resizer-bar::after {
+            content: "";
+            width: 30px;
+            height: 2px;
+            background: ${isDarkMode ? "#333" : "#eee"};
+            border-radius: 2px;
+            transition: background 0.2s;
+          }
+          .resizer-bar:hover::after { background: #1890ff; }
         `}
       </style>
 
@@ -530,14 +573,15 @@ export default function Popup() {
           ) : prompts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "#999" }}>No insights yet!</div>
           ) : (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px", minHeight: 0 }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px", minHeight: 0 }}>
               {/* 🏆 Recommended Section */}
               {(recommendedItems.length > 0 || currentContext !== "ALL") && (
                 <div style={{ 
                   display: "flex", 
                   flexDirection: "column", 
-                  flex: recExpanded ? (othersExpanded ? 1 : 1.5) : "none",
-                  minHeight: recExpanded ? "100px" : "auto"
+                  flex: recExpanded ? (othersExpanded ? "none" : 1) : "none",
+                  height: recExpanded && othersExpanded ? `${recHeight}px` : "auto",
+                  minHeight: recExpanded ? "80px" : "auto"
                 }}>
                   <div className="section-header" onClick={() => { setRecExpanded(!recExpanded); playCheckSound(); }}>
                     <div style={{ fontSize: "11px", fontWeight: "800", color: "#1890ff", textTransform: "uppercase" }}>
@@ -554,12 +598,20 @@ export default function Popup() {
                 </div>
               )}
 
+              {/* 📏 Resizer Bar */}
+              {recExpanded && othersExpanded && recommendedItems.length > 0 && otherItems.length > 0 && (
+                <div 
+                  className="resizer-bar" 
+                  onMouseDown={(e) => { e.preventDefault(); setIsDragging(true); }}
+                />
+              )}
+
               {/* 🌑 Non-recommended Section */}
               {otherItems.length > 0 && (
                 <div className="others-section" style={{ 
                   display: "flex", 
                   flexDirection: "column", 
-                  flex: othersExpanded ? (recExpanded ? 1 : 1.5) : "none",
+                  flex: 1,
                   minHeight: othersExpanded ? "100px" : "auto"
                 }}>
                   <div className="section-header" onClick={() => { setOthersExpanded(!othersExpanded); playCheckSound(); }}>
