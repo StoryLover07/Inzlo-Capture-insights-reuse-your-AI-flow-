@@ -183,43 +183,62 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   const list = document.createElement("div")
   list.id = "inzlo-list"
   list.style.cssText = "overflow-y: auto; flex-grow: 1; padding-right: 4px;"
-  
-  filtered.forEach(p => {
-    const isSiteSpecific = p.url && getDomain(p.url) === currentDomain
-    const item = document.createElement("div")
-    item.className = "inzlo-item"
-    item.style.cssText = `padding: 12px; margin-bottom: 8px; background: ${itemBg}; border-radius: 10px; font-size: 12px; color: ${isDarkMode ? "#ccc" : "#444"}; cursor: copy; transition: all 0.2s; border: 1px solid ${isSiteSpecific ? '#1890ff' : borderColor}; line-height: 1.5; position: relative; overflow: hidden;`
-    
-    if (isSiteSpecific) {
-      const badge = document.createElement("div")
-      badge.innerText = "Current Site"
-      badge.style.cssText = "position: absolute; top: 0; right: 0; font-size: 8px; background: #1890ff; color: white; padding: 2px 6px; border-bottom-left-radius: 8px;"
-      item.appendChild(badge)
+
+  const renderList = (items: Prompt[]) => {
+    list.innerHTML = ""
+    if (items.length === 0) {
+      list.innerHTML = `<div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">No matches found.</div>`
+      return
     }
+    items.forEach(p => {
+      const isSiteSpecific = p.url && getDomain(p.url) === currentDomain
+      const item = document.createElement("div")
+      item.className = "inzlo-item"
+      item.style.cssText = `padding: 12px; margin-bottom: 8px; background: ${itemBg}; border-radius: 10px; font-size: 12px; color: ${isDarkMode ? "#ccc" : "#444"}; cursor: copy; transition: all 0.2s; border: 1px solid ${isSiteSpecific ? '#1890ff' : borderColor}; line-height: 1.5; position: relative; overflow: hidden;`
+      
+      if (isSiteSpecific) {
+        const badge = document.createElement("div")
+        badge.innerText = "HERE"
+        badge.style.cssText = "position: absolute; top: 0; right: 0; font-size: 8px; background: #1890ff; color: white; padding: 2px 6px; border-bottom-left-radius: 8px;"
+        item.appendChild(badge)
+      }
 
-    const tagDiv = document.createElement("div")
-    tagDiv.className = "inzlo-item-tag"
-    tagDiv.innerText = `[${(p.tag || "General").toUpperCase()}]`
-    tagDiv.style.cssText = `font-size: 10px; font-weight: 900; color: #1890ff; margin-bottom: 4px; display: block; letter-spacing: 0.5px;`
-    item.appendChild(tagDiv)
+      const tagDiv = document.createElement("div")
+      tagDiv.className = "inzlo-item-tag"
+      tagDiv.innerText = `[${(p.tag || "General").toUpperCase()}]`
+      tagDiv.style.cssText = `font-size: 10px; font-weight: 900; color: #1890ff; margin-bottom: 4px; display: block; letter-spacing: 0.5px;`
+      item.appendChild(tagDiv)
 
-    const contentDiv = document.createElement("div")
-    contentDiv.innerText = p.content
-    item.appendChild(contentDiv)
+      const contentDiv = document.createElement("div")
+      contentDiv.innerText = p.content
+      item.appendChild(contentDiv)
 
-    item.addEventListener("click", () => {
-      navigator.clipboard.writeText(p.content)
-      playCopySound()
-      const originalHTML = item.innerHTML
-      item.innerHTML = `<div class="inzlo-copied-text">Copied!</div>`
-      item.style.borderColor = "#1890ff"
-      setTimeout(() => { 
-        item.innerHTML = originalHTML
-        item.style.borderColor = isSiteSpecific ? '#1890ff' : borderColor
-      }, 1000)
+      item.addEventListener("click", () => {
+        navigator.clipboard.writeText(p.content)
+        playCopySound()
+        const originalHTML = item.innerHTML
+        item.innerHTML = `<div class="inzlo-copied-text">Copied!</div>`
+        item.style.borderColor = "#1890ff"
+        setTimeout(() => { 
+          item.innerHTML = originalHTML
+          item.style.borderColor = isSiteSpecific ? '#1890ff' : borderColor
+        }, 1000)
+      })
+      list.appendChild(item)
     })
-    list.appendChild(item)
+  }
+
+  const searchInput = header.querySelector(".inzlo-search") as HTMLInputElement
+  searchInput.addEventListener("input", (e) => {
+    const term = (e.target as HTMLInputElement).value.toLowerCase()
+    const matched = filtered.filter(p => 
+      p.content.toLowerCase().includes(term) || 
+      (p.tag || "").toLowerCase().includes(term)
+    )
+    renderList(matched)
   })
+
+  renderList(filtered)
   panel.appendChild(list)
   document.body.appendChild(panel)
 }
