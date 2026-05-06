@@ -151,8 +151,8 @@ export default function Popup() {
       newSelected.delete(id)
     } else {
       newSelected.add(id)
-      playCheckSound()
     }
+    playCheckSound() // 👈 선택/해제 관계없이 소리 재생
     setSelectedIds(newSelected)
   }
 
