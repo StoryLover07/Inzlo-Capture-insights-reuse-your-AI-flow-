@@ -406,7 +406,8 @@ export default function Popup() {
                         display: "-webkit-box", 
                         WebkitLineClamp: 3, 
                         WebkitBoxOrient: "vertical",
-                        wordBreak: "break-all"
+                        wordBreak: "break-all",
+                        paddingBottom: "12px" // 👈 Click to Copy 문구를 위한 공간 확보
                       }}>
                         {p.content}
                       </div>
