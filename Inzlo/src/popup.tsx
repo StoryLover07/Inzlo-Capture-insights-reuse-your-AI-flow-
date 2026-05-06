@@ -453,6 +453,11 @@ export default function Popup() {
           .prompt-item:hover .item-checkbox { opacity: 1 !important; }
           .prompt-item:hover .corner-badge { opacity: 1 !important; }
           
+          /* 🏷️ Tag Filter Scrollbar Hide */
+          .tag-filter-container::-webkit-scrollbar {
+            display: none;
+          }
+          
           .arrow-icon {
             font-size: 10px;
             color: #1890ff;
@@ -663,7 +668,10 @@ export default function Popup() {
                 marginBottom: "10px"
               }}
             />
-            <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px" }}>
+            <div 
+              className="tag-filter-container"
+              style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px" }}
+            >
               {dynamicTags.map(t => (
                 <button 
                   key={t}
