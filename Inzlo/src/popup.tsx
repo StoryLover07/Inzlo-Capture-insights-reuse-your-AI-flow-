@@ -57,6 +57,8 @@ export default function Popup() {
       const audioBuffer = await context.decodeAudioData(arrayBuffer)
       
       const source = context.createBufferSource()
+      const gainNode = context.createGain() // 👈 GainNode 추가
+      
       const channelCount = audioBuffer.numberOfChannels
       const newBuffer = context.createBuffer(channelCount, audioBuffer.length, audioBuffer.sampleRate)
       
@@ -69,7 +71,15 @@ export default function Popup() {
       }
       
       source.buffer = newBuffer
-      source.connect(context.destination)
+      
+      // 👈 볼륨 조절 및 페이드 아웃 로직
+      const duration = newBuffer.duration
+      gainNode.gain.setValueAtTime(0.3, context.currentTime) // 시작 볼륨을 조금 더 낮게 설정
+      gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + duration) // 끝으로 갈수록 부드럽게 사라짐
+      
+      source.connect(gainNode)
+      gainNode.connect(context.destination)
+      
       source.start()
     } catch (e) {
       console.error("Reverse audio failed", e)
