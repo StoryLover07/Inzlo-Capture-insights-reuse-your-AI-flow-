@@ -284,6 +284,17 @@ document.addEventListener("mousedown", (e) => {
 
 init()
 
+// ⚡ 설정 변경 실시간 감시 및 반영
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local") {
+    const keys = Object.keys(changes)
+    // 인즐로 관련 설정이 하나라도 바뀌면 즉시 init 실행
+    if (keys.some(k => k.startsWith("inzlo_"))) {
+      init()
+    }
+  }
+})
+
 let lastUrl = window.location.href
 setInterval(() => {
   if (window.location.href !== lastUrl) {
