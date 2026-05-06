@@ -17,7 +17,7 @@ const detectContext = (url: string) => {
   if (lowUrl.includes("mail.google.com")) {
     return "Email"
   }
-  return null
+  return "General" // 👈 모든 일반 사이트에서는 General 태그 사용
 }
 
 const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: boolean, duration: number) => {
