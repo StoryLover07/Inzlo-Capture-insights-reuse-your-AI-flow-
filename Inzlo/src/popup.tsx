@@ -408,10 +408,10 @@ export default function Popup() {
                       <div style={{ 
                         overflow: "hidden", 
                         display: "-webkit-box", 
-                        WebkitLineClamp: 3, 
+                        WebkitLineClamp: 2, // 👈 3줄에서 2줄로 변경
                         WebkitBoxOrient: "vertical",
                         wordBreak: "break-all",
-                        marginBottom: "4px" // 👈 Click to Copy 문구와 겹치지 않게 아래 여백 추가
+                        marginBottom: "4px"
                       }}>
                         {p.content}
                       </div>
