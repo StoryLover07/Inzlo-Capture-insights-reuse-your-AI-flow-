@@ -4,8 +4,6 @@ export const config = {
 
 export {}
 
-console.log("🔥 content script loaded")
-
 let saveButton: HTMLButtonElement | null = null
 let selectedText = ""
 
@@ -38,14 +36,35 @@ function showButton(x: number, y: number) {
   saveButton.style.background = "#000"
   saveButton.style.color = "#fff"
   saveButton.style.cursor = "pointer"
-  saveButton.style.pointerEvents = "auto"
 
   saveButton.addEventListener("click", (e) => {
     e.stopPropagation()
     e.preventDefault()
 
-    console.log("🔥 BUTTON CLICKED")
-    alert("clicked")
+    // 👉 storage 불러오기
+    chrome.storage.local.get(["inzlo_prompts"], (result) => {
+      let prompts = result.inzlo_prompts || []
+
+      // 👉 중복 방지
+      if (prompts.some((p: any) => p.content === selectedText)) {
+        console.log("Already saved")
+        removeButton()
+        return
+      }
+
+      const newItem = {
+        id: Date.now().toString(),
+        content: selectedText,
+        createdAt: Date.now()
+      }
+
+      const updated = [...prompts, newItem]
+
+      // 👉 저장
+      chrome.storage.local.set({ inzlo_prompts: updated }, () => {
+        console.log("Saved successfully:", selectedText)
+      })
+    })
 
     removeButton()
   })
