@@ -235,7 +235,9 @@ export default function Popup() {
     return itemTag !== "general" // ALL context일 때
   })
 
-  const tags = ["All", "General", "AI", "Email", "Code"]
+  const defaultTags = ["All", "General", "AI", "Email", "Code"]
+  const customTags = Array.from(new Set(prompts.map(p => p.tag).filter(t => t && !defaultTags.includes(t))))
+  const dynamicTags = [...defaultTags, ...customTags]
 
   const handleTagClick = (tag: string) => {
     setSelectedTag(tag)
@@ -651,7 +653,7 @@ export default function Popup() {
               }}
             />
             <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px" }}>
-              {tags.map(t => (
+              {dynamicTags.map(t => (
                 <button 
                   key={t}
                   onClick={() => handleTagClick(t)}
