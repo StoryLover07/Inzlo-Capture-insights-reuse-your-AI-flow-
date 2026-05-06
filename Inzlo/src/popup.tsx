@@ -19,7 +19,8 @@ export default function Popup() {
   const [currentContext, setCurrentContext] = useState("ALL")
   const [showSettings, setShowSettings] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const [isSuggestEnabled, setIsSuggestEnabled] = useState(true) // 👈 제안 패널 활성화 상태
+  const [isSuggestEnabled, setIsSuggestEnabled] = useState(true)
+  const [suggestDuration, setSuggestDuration] = useState(10) // 👈 노출 시간 (초)
   const [recExpanded, setRecExpanded] = useState(true)
   const [othersExpanded, setOthersExpanded] = useState(true)
   const [recHeight, setRecHeight] = useState(200) // 👈 추천 목록 높이 상태
@@ -52,12 +53,15 @@ export default function Popup() {
   }, [isDragging])
 
   const loadSettings = () => {
-    chrome.storage.local.get(["inzlo_darkmode", "inzlo_suggest_enabled"], (res) => {
+    chrome.storage.local.get(["inzlo_darkmode", "inzlo_suggest_enabled", "inzlo_suggest_duration"], (res) => {
       if (res.inzlo_darkmode !== undefined) {
         setIsDarkMode(res.inzlo_darkmode)
       }
       if (res.inzlo_suggest_enabled !== undefined) {
         setIsSuggestEnabled(res.inzlo_suggest_enabled)
+      }
+      if (res.inzlo_suggest_duration !== undefined) {
+        setSuggestDuration(res.inzlo_suggest_duration)
       }
     })
   }
@@ -72,6 +76,11 @@ export default function Popup() {
     setIsSuggestEnabled(val)
     chrome.storage.local.set({ inzlo_suggest_enabled: val })
     playCheckSound()
+  }
+
+  const handleDurationChange = (val: number) => {
+    setSuggestDuration(val)
+    chrome.storage.local.set({ inzlo_suggest_duration: val })
   }
 
   const detectContext = () => {
@@ -586,6 +595,21 @@ export default function Popup() {
                 <input type="checkbox" checked={isSuggestEnabled} onChange={(e) => toggleSuggest(e.target.checked)} />
                 <span className="slider"></span>
               </label>
+            </div>
+
+            <div style={{ padding: "14px", backgroundColor: isDarkMode ? "#1a1a1a" : "#fafafa", borderRadius: "10px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+                <span style={{ fontSize: "13px", fontWeight: "600" }}>Suggestion Duration</span>
+                <span style={{ fontSize: "13px", fontWeight: "700", color: "#1890ff" }}>{suggestDuration}s</span>
+              </div>
+              <input 
+                type="range" 
+                min="1" 
+                max="60" 
+                value={suggestDuration} 
+                onChange={(e) => handleDurationChange(parseInt(e.target.value))}
+                style={{ width: "100%", cursor: "pointer", accentColor: "#1890ff" }}
+              />
             </div>
           </div>
           

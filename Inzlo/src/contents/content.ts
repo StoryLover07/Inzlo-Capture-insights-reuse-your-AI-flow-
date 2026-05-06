@@ -20,15 +20,11 @@ const detectContext = (url: string) => {
   return null
 }
 
-const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: boolean) => {
-  // 이미 있으면 일단 제거
+const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: boolean, duration: number) => {
   const existing = document.getElementById(PANEL_ID)
   if (existing) existing.remove()
 
-  // 🎯 엄격한 필터링: 컨텍스트와 정확히 일치하는 태그만 추출
   const filtered = prompts.filter(p => (p.tag || "").toLowerCase() === context.toLowerCase()).slice(0, 3)
-
-  // 일치하는 항목이 없으면 패널을 띄우지 않음
   if (filtered.length === 0) return
 
   const bgColor = isDarkMode ? "#1a1a1a" : "#ffffff"
@@ -47,7 +43,22 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     border: 1px solid ${isDarkMode ? "#333" : "rgba(0,0,0,0.05)"}; 
     animation: inzloFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.5s ease;
   `
+
+  // ⏱️ Auto-hide Logic
+  let hideTimer: any = null
+  const startTimer = () => {
+    hideTimer = setTimeout(() => {
+      panel.style.opacity = "0"
+      setTimeout(() => panel.remove(), 500)
+    }, duration * 1000)
+  }
+  const stopTimer = () => clearTimeout(hideTimer)
+
+  panel.addEventListener("mouseenter", stopTimer)
+  panel.addEventListener("mouseleave", startTimer)
+  startTimer()
 
   const styleSheet = document.createElement("style")
   styleSheet.textContent = `
@@ -170,13 +181,14 @@ const savePrompt = (content: string) => {
 const init = () => {
   const context = detectContext(window.location.href)
   
-  chrome.storage.local.get(["inzlo_prompts", "inzlo_suggest_enabled", "inzlo_darkmode"], (res) => {
+  chrome.storage.local.get(["inzlo_prompts", "inzlo_suggest_enabled", "inzlo_darkmode", "inzlo_suggest_duration"], (res) => {
     const isSuggestEnabled = res.inzlo_suggest_enabled !== false
     const isDarkMode = res.inzlo_darkmode === true
+    const duration = res.inzlo_suggest_duration || 10 // 기본값 10초
     const prompts = res.inzlo_prompts || []
     
     if (context && isSuggestEnabled) {
-      createSuggestionPanel(prompts, context, isDarkMode)
+      createSuggestionPanel(prompts, context, isDarkMode, duration)
     } else {
       const existing = document.getElementById(PANEL_ID)
       if (existing) existing.remove()
