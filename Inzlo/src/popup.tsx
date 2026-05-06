@@ -311,6 +311,4 @@ export default function Popup() {
       )}
     </div>
   )
-    </div>
-  )
 }
