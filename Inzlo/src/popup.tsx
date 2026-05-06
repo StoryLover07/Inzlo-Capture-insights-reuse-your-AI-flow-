@@ -17,6 +17,7 @@ export default function Popup() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTag, setSelectedTag] = useState("All")
   const [currentContext, setCurrentContext] = useState("ALL")
+  const [currentUrl, setCurrentUrl] = useState("") // 👈 현재 탭 URL 상태 추가
   const [showSettings, setShowSettings] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [isSuggestEnabled, setIsSuggestEnabled] = useState(true)
@@ -96,6 +97,7 @@ export default function Popup() {
   const detectContext = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const url = tabs[0]?.url || ""
+      setCurrentUrl(url) // 👈 URL 저장
       let context = "ALL"
       if (url.includes("chatgpt.com") || url.includes("chat.openai.com")) {
         context = "AI"
@@ -219,21 +221,30 @@ export default function Popup() {
 
   const baseFiltered = getFilteredItems(prompts)
   
-  // 👈 Logic Fix: Separate Recommended vs Non-recommended
-  const recommendedItems = baseFiltered.filter(p => {
-    const itemTag = (p.tag || "General").toLowerCase()
-    // AI 사이트면 AI 태그, Email 사이트면 Email 태그, ALL이면 General 태그를 추천
-    if (currentContext === "AI") return itemTag === "ai"
-    if (currentContext === "Email") return itemTag === "email"
-    return itemTag === "general" // ALL context일 때
-  })
+  const getDomain = (u: string) => {
+    try { return new URL(u).hostname.replace("www.", "") } catch(e) { return "" }
+  }
 
-  const otherItems = baseFiltered.filter(p => {
-    const itemTag = (p.tag || "General").toLowerCase()
-    if (currentContext === "AI") return itemTag !== "ai"
-    if (currentContext === "Email") return itemTag !== "email"
-    return itemTag !== "general" // ALL context일 때
-  })
+  const activeDomain = getDomain(currentUrl)
+
+  // 👈 Logic Fix: Separate Recommended (Site-Specific + Context) vs Others
+  const recommendedItems = (() => {
+    // 1순위: 현재 사이트에서 저장된 모든 항목 (태그 무관)
+    const siteSpecific = baseFiltered.filter(p => p.url && getDomain(p.url) === activeDomain)
+    
+    // 2순위: 현재 컨텍스트와 일치하는 태그 항목 (차선)
+    const contextSpecific = baseFiltered.filter(p => {
+      const itemTag = (p.tag || "General").toLowerCase()
+      const isContextMatch = (currentContext === "AI" && itemTag === "ai") ||
+                           (currentContext === "Email" && itemTag === "email") ||
+                           (currentContext === "ALL" && itemTag === "general")
+      return isContextMatch && !siteSpecific.find(s => s.id === p.id)
+    })
+
+    return [...siteSpecific, ...contextSpecific]
+  })()
+
+  const otherItems = baseFiltered.filter(p => !recommendedItems.find(r => r.id === p.id))
 
   const defaultTags = ["All", "General", "AI", "Email", "Code"]
   const customTags = Array.from(new Set(prompts.map(p => p.tag).filter(t => t && !defaultTags.includes(t))))
