@@ -100,6 +100,10 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 // --- ✂️ Selection & Dynamic Tag Bar Logic ---
 
 const handleMouseUp = (e: MouseEvent) => {
+  // 🎯 중요: 클릭 대상이 이미 인즐로 버튼 내부라면 무시 (사라짐 방지)
+  const target = e.target as HTMLElement
+  if (target.closest(`#${CAPTURE_BTN_ID}`)) return
+
   setTimeout(() => {
     const selection = window.getSelection()
     const text = selection?.toString().trim()
@@ -170,7 +174,8 @@ const expandToTagBar = (btn: HTMLElement, text: string) => {
 
   const input = document.createElement("input")
   input.placeholder = "+ Custom"
-  input.style.cssText = "width: 70px; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.5); color: white; font-size: 11px; outline: none; padding: 2px 4px;"
+  input.style.cssText = "width: 75px; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.5); color: white; font-size: 11px; outline: none; padding: 2px 4px;"
+  input.onmousedown = (e) => e.stopPropagation() // 🎯 클릭 시 사라짐 방지
   input.onclick = (e) => e.stopPropagation()
   input.onkeydown = (e) => {
     if (e.key === "Enter" && input.value.trim()) {
@@ -181,6 +186,8 @@ const expandToTagBar = (btn: HTMLElement, text: string) => {
   container.appendChild(input)
 
   btn.appendChild(container)
+  // 입력창에 자동 포커스
+  setTimeout(() => input.focus(), 300)
 }
 
 const showSavedFeedback = (btn: HTMLElement) => {
@@ -215,7 +222,10 @@ const init = () => {
     const duration = res.inzlo_suggest_duration || 10
     const isTaggedOnly = res.inzlo_suggest_tagged_only === true
     const prompts = res.inzlo_prompts || []
+    
+    // 일반 사이트에서도 뜰 수 있도록 조건 확인
     const shouldShow = isSuggestEnabled && context && (!isTaggedOnly || context !== "General")
+    
     if (shouldShow) createSuggestionPanel(prompts, context, isDarkMode, duration)
     else {
       const existing = document.getElementById(PANEL_ID)
@@ -225,6 +235,15 @@ const init = () => {
 }
 
 document.addEventListener("mouseup", handleMouseUp)
+
+// 다른 곳 클릭 시 버튼 제거 로직 복구 (하지만 버튼 자체 클릭은 제외)
+document.addEventListener("mousedown", (e) => {
+  const target = e.target as HTMLElement
+  if (target.closest(`#${CAPTURE_BTN_ID}`)) return
+  const btn = document.getElementById(CAPTURE_BTN_ID)
+  if (btn) btn.remove()
+})
+
 init()
 
 let lastUrl = window.location.href
