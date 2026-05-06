@@ -21,22 +21,14 @@ const detectContext = (url: string) => {
 }
 
 const createSuggestionPanel = (prompts: any[], context: string) => {
-  // 이미 있으면 제거 후 갱신
+  // 이미 있으면 일단 제거
   const existing = document.getElementById(PANEL_ID)
   if (existing) existing.remove()
 
-  // 1. 컨텍스트와 정확히 일치하는 프롬프트 필터링
-  let filtered = prompts.filter(p => (p.tag || "").toLowerCase() === context.toLowerCase())
-  
-  // 2. 만약 해당 컨텍스트 항목이 부족하면 General 항목을 추가 (총 3개까지)
-  if (filtered.length < 3) {
-    const generalItems = prompts.filter(p => 
-      (p.tag || "").toLowerCase() === "general" && 
-      !filtered.find(f => f.id === p.id)
-    )
-    filtered = [...filtered, ...generalItems].slice(0, 3)
-  }
+  // 🎯 엄격한 필터링: 컨텍스트와 정확히 일치하는 태그만 추출
+  const filtered = prompts.filter(p => (p.tag || "").toLowerCase() === context.toLowerCase()).slice(0, 3)
 
+  // 일치하는 항목이 없으면 패널을 띄우지 않음
   if (filtered.length === 0) return
 
   const panel = document.createElement("div")
