@@ -113,11 +113,13 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   `
 
   let hideTimer: any = null
+  const dismissPanel = () => {
+    panel.style.animation = "inzloSlideOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards"
+    setTimeout(() => panel.remove(), 500)
+  }
+
   const startTimer = () => {
-    hideTimer = setTimeout(() => {
-      panel.style.opacity = "0"
-      setTimeout(() => panel.remove(), 500)
-    }, duration * 1000)
+    hideTimer = setTimeout(dismissPanel, duration * 1000)
   }
   const stopTimer = () => clearTimeout(hideTimer)
 
@@ -127,7 +129,8 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 
   const styleSheet = document.createElement("style")
   styleSheet.textContent = `
-    @keyframes inzloFadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes inzloFadeIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes inzloSlideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100px); } }
     @keyframes inzloBlink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     .inzlo-item:hover { background: ${isDarkMode ? "#333" : "#f0f7ff"} !important; border-color: #1890ff !important; transform: translateY(-1px); }
     .inzlo-item:active { transform: scale(0.98); }
@@ -153,7 +156,7 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
     </div>
     <div class="inzlo-close" style="cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #999; font-size: 18px; transition: all 0.2s;">×</div>
   `
-  header.querySelector(".inzlo-close").addEventListener("click", () => panel.remove())
+  header.querySelector(".inzlo-close").addEventListener("click", dismissPanel)
   panel.appendChild(header)
 
   const list = document.createElement("div")
