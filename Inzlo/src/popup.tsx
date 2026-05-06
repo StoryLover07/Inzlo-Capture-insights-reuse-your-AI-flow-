@@ -210,8 +210,8 @@ export default function Popup() {
           }
           .source-tooltip {
             position: absolute;
-            bottom: 85%; /* 👈 위치를 약간 아래로 내림 */
-            left: 40px;  /* 👈 태그를 가리지 않도록 오른쪽으로 이동 */
+            bottom: 90%;
+            left: 5px; /* 👈 본체는 왼쪽으로 바짝 붙임 */
             background: rgba(0, 0, 0, 0.85);
             color: #fff;
             padding: 6px 12px;
@@ -231,7 +231,7 @@ export default function Popup() {
             content: '';
             position: absolute;
             top: 100%;
-            left: 10px; /* 👈 화살표가 태그 옆을 향하도록 왼쪽으로 밀어둠 */
+            left: 35px; /* 👈 화살표를 오른쪽으로 옮겨서 태그를 가리키게 함 */
             border-width: 5px;
             border-style: solid;
             border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
