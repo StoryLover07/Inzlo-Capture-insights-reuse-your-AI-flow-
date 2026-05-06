@@ -15,11 +15,26 @@ export default function Popup() {
   const [loading, setLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedTag, setSelectedTag] = useState("All") // 👈 Tag state
+  const [selectedTag, setSelectedTag] = useState("All")
+  const [currentContext, setCurrentContext] = useState("ALL") // 👈 Context state
 
   useEffect(() => {
     loadData()
+    detectContext() // 👈 Detect current site
   }, [])
+
+  const detectContext = () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const url = tabs[0]?.url || ""
+      let context = "ALL"
+      if (url.includes("chatgpt.com") || url.includes("chat.openai.com")) {
+        context = "AI"
+      } else if (url.includes("mail.google.com")) {
+        context = "Email"
+      }
+      setCurrentContext(context)
+    })
+  }
 
   const loadData = () => {
     chrome.storage.local.get(["inzlo_prompts"], (result) => {
@@ -131,14 +146,20 @@ export default function Popup() {
     }
   }
 
-  // 👈 Enhanced filter logic (Tag + Search)
+  // 👈 Enhanced filter chain (Context -> Tag -> Search)
   const filteredPrompts = prompts.filter(p => {
     const itemTag = (p.tag || "General").toLowerCase()
-    const targetTag = selectedTag.toLowerCase()
     
-    const matchesTag = selectedTag === "All" || itemTag === targetTag
+    // 1. Context Filter
+    const matchesContext = currentContext === "ALL" || itemTag === currentContext.toLowerCase()
+    
+    // 2. Selected Tag Filter
+    const matchesTag = selectedTag === "All" || itemTag === selectedTag.toLowerCase()
+    
+    // 3. Search Filter
     const matchesSearch = p.content.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesTag && matchesSearch
+    
+    return matchesContext && matchesTag && matchesSearch
   })
 
   const tags = ["All", "General", "AI", "Email", "Code"] // 👈 Reordered tags
@@ -245,7 +266,12 @@ export default function Popup() {
       </style>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-        <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>Inzlo</h2>
+        <div>
+          <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>Inzlo</h2>
+          <div style={{ fontSize: "10px", color: "#1890ff", fontWeight: "600", marginTop: "2px" }}>
+            Context: {currentContext}
+          </div>
+        </div>
         <div style={{ display: "flex", gap: "8px" }}>
           {selectedIds.size > 0 && (
             <button 
