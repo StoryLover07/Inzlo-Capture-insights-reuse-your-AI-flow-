@@ -236,7 +236,8 @@ export default function Popup() {
           boxShadow: isCopied ? "none" : "0 2px 4px rgba(0,0,0,0.02)",
           display: "flex",
           alignItems: "center",
-          minHeight: "50px"
+          minHeight: "50px",
+          overflow: "hidden" // 👈 layer가 안 보이게 숨김
         }}
       >
         <div
@@ -297,11 +298,11 @@ export default function Popup() {
                 href={p.url} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="source-tooltip"
+                className="source-layer"
                 onClick={(e) => e.stopPropagation()}
               >
                 <span style={{ fontWeight: "bold", color: "#1890ff" }}>{p.source}</span>
-                <span>·</span>
+                <span style={{ opacity: 0.5 }}>·</span>
                 <span style={{ opacity: 0.8 }}>
                   {p.url ? new URL(p.url).hostname : "local"}
                 </span>
@@ -369,36 +370,28 @@ export default function Popup() {
             font-weight: 500;
           }
           .prompt-item:hover .copy-hint { opacity: 1; }
-          .source-tooltip {
+          .source-layer {
             position: absolute;
-            bottom: 85%;
-            left: 40px;
-            background: rgba(0, 0, 0, 0.85);
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
             color: #fff;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            white-space: nowrap;
-            opacity: 0;
-            transition: all 0.2s ease;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 8px;
+            font-size: 11px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 20;
             text-decoration: none;
-            cursor: pointer;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
           }
-          .source-tooltip::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 10px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
-          }
-          .prompt-item:hover .source-tooltip { opacity: 1; transform: translateY(-2px); }
+          .prompt-item:hover .source-layer { transform: translateY(0); }
           .prompt-item:hover .item-checkbox { opacity: 1 !important; }
           
           .arrow-icon {
