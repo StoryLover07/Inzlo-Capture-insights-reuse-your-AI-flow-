@@ -156,8 +156,9 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
     }
 
     const tagDiv = document.createElement("div")
-    tagDiv.innerText = `[${p.tag || "General"}]`
-    tagDiv.style.cssText = `font-size: 9px; font-weight: 800; color: #1890ff; margin-bottom: 4px; text-transform: uppercase;`
+    tagDiv.className = "inzlo-item-tag"
+    tagDiv.innerText = `[${(p.tag || "General").toUpperCase()}]`
+    tagDiv.style.cssText = `font-size: 10px; font-weight: 900; color: #1890ff; margin-bottom: 4px; display: block; letter-spacing: 0.5px;`
     item.appendChild(tagDiv)
 
     const contentDiv = document.createElement("div")
