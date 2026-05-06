@@ -204,6 +204,28 @@ export default function Popup() {
           .prompt-item:hover .copy-hint {
             opacity: 1;
           }
+          .source-link {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 10px;
+            background: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #1890ff;
+            color: #1890ff;
+            text-decoration: none;
+            opacity: 0;
+            transition: all 0.2s;
+            z-index: 20;
+          }
+          .source-link:hover {
+            background: #1890ff;
+            color: #fff;
+          }
+          .prompt-item:hover .source-link {
+            opacity: 1;
+          }
         `}
       </style>
 
@@ -367,37 +389,29 @@ export default function Popup() {
                         marginBottom: "4px",
                         textTransform: "uppercase"
                       }}>
-                        [{p.tag || "General"} {p.source ? `· ${p.source}` : ""}]
+                        [{p.tag || "General"}]
                       </div>
                       <div style={{ 
                         overflow: "hidden", 
                         display: "-webkit-box", 
                         WebkitLineClamp: 3, 
                         WebkitBoxOrient: "vertical",
-                        wordBreak: "break-all",
-                        marginBottom: "4px"
+                        wordBreak: "break-all"
                       }}>
                         {p.content}
                       </div>
-                      {/* 👈 Metadata line */}
-                      <div style={{ 
-                        fontSize: "9px", 
-                        color: "#999", 
-                        display: "flex", 
-                        gap: "4px" 
-                      }}>
-                        <span>{p.source || "Web"}</span>
-                        <span>·</span>
-                        <span style={{ 
-                          maxWidth: "150px", 
-                          overflow: "hidden", 
-                          textOverflow: "ellipsis", 
-                          whiteSpace: "nowrap" 
-                        }}>
-                          {p.url ? new URL(p.url).hostname : "local"}
-                        </span>
-                      </div>
                     </div>
+                    {p.url && (
+                      <a 
+                        href={p.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="source-link"
+                        onClick={(e) => e.stopPropagation()} // 👈 복사 이벤트 방지
+                      >
+                        Source ↗
+                      </a>
+                    )}
                     <div className="copy-hint">Click to Copy</div>
                   </>
                 )}
