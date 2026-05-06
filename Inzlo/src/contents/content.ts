@@ -114,17 +114,16 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   `
 
   let hideTimer: any = null
-  const dismissPanel = () => {
-    // 👈 마우스가 올라와 있으면 사라지지 않음
-    if (panel.matches(':hover')) {
+  const dismissPanel = (force = false) => {
+    if (!force && panel.matches(':hover')) {
       startTimer()
       return
     }
     panel.style.animation = "inzloSlideOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards"
     setTimeout(() => {
-      if (!panel.matches(':hover')) panel.remove()
+      if (force || !panel.matches(':hover')) panel.remove()
       else {
-        panel.style.animation = "inzloFadeIn 0.3s ease forwards" // 복구
+        panel.style.animation = "inzloFadeIn 0.3s ease forwards"
         startTimer()
       }
     }, 500)
@@ -132,7 +131,7 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 
   const startTimer = () => {
     clearTimeout(hideTimer)
-    hideTimer = setTimeout(dismissPanel, duration * 1000)
+    hideTimer = setTimeout(() => dismissPanel(false), duration * 1000)
   }
   const stopTimer = () => {
     clearTimeout(hideTimer)
@@ -177,7 +176,7 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
       background: ${isDarkMode ? "#262626" : "#fff"}; color: ${textColor}; font-size: 13px; outline: none; box-sizing: border-box;"
     >
   `
-  header.querySelector(".inzlo-close").addEventListener("click", dismissPanel)
+  header.querySelector(".inzlo-close").addEventListener("click", () => dismissPanel(true))
   panel.appendChild(header)
 
   const list = document.createElement("div")
