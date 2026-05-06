@@ -17,13 +17,15 @@ export default function Popup() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTag, setSelectedTag] = useState("All")
   const [currentContext, setCurrentContext] = useState("ALL")
-  const [showSettings, setShowSettings] = useState(false) // 👈 Settings view toggle
-  const [isDarkMode, setIsDarkMode] = useState(false) // 👈 Dark mode state
+  const [showSettings, setShowSettings] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [recExpanded, setRecExpanded] = useState(true) // 👈 Recommended section toggle
+  const [othersExpanded, setOthersExpanded] = useState(true) // 👈 Others section toggle
 
   useEffect(() => {
     loadData()
     detectContext()
-    loadSettings() // 👈 Load dark mode pref
+    loadSettings()
   }, [])
 
   const loadSettings = () => {
@@ -349,8 +351,8 @@ export default function Popup() {
           .prompt-item:hover .copy-hint { opacity: 1; }
           .source-tooltip {
             position: absolute;
-            bottom: 110%;
-            left: -20px;
+            bottom: 85%;
+            left: 40px;
             background: rgba(0, 0, 0, 0.85);
             color: #fff;
             padding: 6px 12px;
@@ -371,7 +373,7 @@ export default function Popup() {
             content: '';
             position: absolute;
             top: 100%;
-            right: 15px;
+            left: 10px;
             border-width: 5px;
             border-style: solid;
             border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
@@ -379,6 +381,33 @@ export default function Popup() {
           .prompt-item:hover .source-tooltip { opacity: 1; transform: translateY(-2px); }
           .prompt-item:hover .item-checkbox { opacity: 1 !important; }
           
+          .arrow-icon {
+            font-size: 10px;
+            color: #1890ff;
+            transition: transform 0.3s ease;
+            margin-left: 6px;
+          }
+          .arrow-up { transform: rotate(180deg); }
+          .arrow-down { transform: rotate(0deg); }
+          
+          .section-header {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 10px;
+          }
+          
+          .scroll-area {
+            max-height: 155px; /* 👈 2 items limit (~70px each) */
+            overflow-y: auto;
+            padding-right: 4px;
+            transition: max-height 0.3s ease;
+          }
+          .scroll-area::-webkit-scrollbar { width: 4px; }
+          .scroll-area::-webkit-scrollbar-thumb { background: #eee; border-radius: 10px; }
+          
+          input { box-sizing: border-box; } /* 👈 prevent overflow */
           .apple-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
           .apple-switch input { opacity: 0; width: 0; height: 0; }
           .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
@@ -404,22 +433,17 @@ export default function Popup() {
             background: rgba(255,255,255,0.9) !important;
             color: #000 !important;
           }
-          
-          .scroll-area {
-            max-height: 250px;
-            overflow-y: auto;
-            padding-right: 4px;
-          }
-          .scroll-area::-webkit-scrollbar { width: 4px; }
-          .scroll-area::-webkit-scrollbar-thumb { background: #eee; border-radius: 10px; }
         `}
       </style>
 
+      {/* 🚀 Header */}
       <div style={{ 
         display: "flex", 
         justifyContent: "space-between", 
         alignItems: "center", 
-        marginBottom: "16px" 
+        marginBottom: "16px",
+        borderBottom: isDarkMode ? "1px solid #333" : "none",
+        paddingBottom: isDarkMode ? "8px" : "0"
       }}>
         <div>
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "800", letterSpacing: "-0.5px" }}>Inzlo</h2>
@@ -428,7 +452,8 @@ export default function Popup() {
           )}
         </div>
         
-        <div style={{ display: "flex", gap          {selectedIds.size > 0 ? (
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          {selectedIds.size > 0 ? (
             <button onClick={deleteSelected} style={{ backgroundColor: "#ff4d4f", color: "#fff", border: "none", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", cursor: "pointer", fontWeight: "600" }}>
               Delete ({selectedIds.size})
             </button>
@@ -439,7 +464,10 @@ export default function Popup() {
                   Clear All
                 </button>
               )}
-              <div onClick={() => setShowSettings(!showSettings)} style={{ cursor: "pointer", fontSize: "18px", padding: "4px" }}>
+              <div 
+                onClick={() => setShowSettings(!showSettings)} 
+                style={{ cursor: "pointer", fontSize: "18px", padding: "4px", color: isDarkMode ? "#fff" : "#333" }}
+              >
                 {showSettings ? "✕" : "⚙️"}
               </div>
             </>
@@ -499,26 +527,44 @@ export default function Popup() {
           ) : prompts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "#999" }}>No insights yet!</div>
           ) : (
-            <div style={{ height: "420px", overflowY: "auto", paddingRight: "4px" }}>
-              {/* 🏆 Recommended */}
+            <div style={{ height: "420px", overflowY: "auto", paddingRight: "4px", paddingTop: "10px" }}>
+              {/* 🏆 Recommended Section */}
               {recommendedItems.length > 0 && (
                 <div style={{ marginBottom: "20px" }}>
-                  <div style={{ fontSize: "11px", fontWeight: "800", color: "#1890ff", marginBottom: "10px", textTransform: "uppercase" }}>
-                    Recommended for {currentContext}
+                  <div 
+                    className="section-header"
+                    onClick={() => setRecExpanded(!recExpanded)}
+                  >
+                    <div style={{ fontSize: "11px", fontWeight: "800", color: "#1890ff", textTransform: "uppercase" }}>
+                      Recommended for {currentContext}
+                    </div>
+                    <span className={`arrow-icon ${recExpanded ? 'arrow-down' : 'arrow-right'}`} style={{ color: "#1890ff", marginLeft: "8px", fontSize: "10px", transform: recExpanded ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.3s" }}>▼</span>
                   </div>
-                  {recommendedItems.map(p => renderPromptItem(p))}
+                  {recExpanded && (
+                    <div className="scroll-area">
+                      {recommendedItems.map(p => renderPromptItem(p))}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* 🌑 Others */}
+              {/* 🌑 Non-recommended Section */}
               {otherItems.length > 0 && (
                 <div className="others-section">
-                  <div style={{ fontSize: "11px", fontWeight: "800", color: "#999", marginBottom: "10px", textTransform: "uppercase" }}>
-                    Others
+                  <div 
+                    className="section-header"
+                    onClick={() => setOthersExpanded(!othersExpanded)}
+                  >
+                    <div style={{ fontSize: "11px", fontWeight: "800", color: "#999", textTransform: "uppercase" }}>
+                      Non-recommended for {currentContext}
+                    </div>
+                    <span className={`arrow-icon ${othersExpanded ? 'arrow-down' : 'arrow-right'}`} style={{ color: "#1890ff", marginLeft: "8px", fontSize: "10px", transform: othersExpanded ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.3s" }}>▼</span>
                   </div>
-                  <div className="scroll-area">
-                    {otherItems.map(p => renderPromptItem(p))}
-                  </div>
+                  {othersExpanded && (
+                    <div className="scroll-area">
+                      {otherItems.map(p => renderPromptItem(p))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
