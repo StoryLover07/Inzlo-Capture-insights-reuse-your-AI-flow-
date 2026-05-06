@@ -133,12 +133,24 @@ export default function Popup() {
         {`
           @keyframes glow-animation {
             0% { border-color: #f0f0f0; box-shadow: 0 0 0px transparent; }
-            30% { border-color: #ff00ea; box-shadow: 0 0 10px rgba(255, 0, 234, 0.4); }
-            60% { border-color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); }
+            30% { border-color: #ff00ea; box-shadow: 0 0 15px rgba(255, 0, 234, 0.5); }
+            60% { border-color: #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.5); }
             100% { border-color: #f0f0f0; box-shadow: 0 0 0px transparent; }
           }
+          @keyframes blink-animation {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+          }
           .glow-item {
-            animation: glow-animation 1s ease;
+            animation: glow-animation 1s ease forwards;
+          }
+          .blink-text {
+            animation: blink-animation 0.5s ease infinite;
+            font-weight: bold;
+            color: #1890ff;
+            text-align: center;
+            width: 100%;
           }
         `}
       </style>
@@ -208,7 +220,10 @@ export default function Popup() {
                   lineHeight: "1.5",
                   backgroundColor: isSelected ? "#e6f7ff" : "#fff",
                   transition: "all 0.2s ease",
-                  boxShadow: isCopied ? "none" : "0 2px 4px rgba(0,0,0,0.02)"
+                  boxShadow: isCopied ? "none" : "0 2px 4px rgba(0,0,0,0.02)",
+                  display: "flex",
+                  alignItems: "center",
+                  minHeight: "45px"
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) e.currentTarget.style.backgroundColor = "#fafafa"
@@ -228,7 +243,8 @@ export default function Popup() {
                   style={{
                     position: "absolute",
                     left: "10px",
-                    top: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
                     width: "18px",
                     height: "18px",
                     borderRadius: "4px",
@@ -249,15 +265,20 @@ export default function Popup() {
                   )}
                 </div>
                 
-                <div style={{ 
-                  overflow: "hidden", 
-                  display: "-webkit-box", 
-                  WebkitLineClamp: 3, 
-                  WebkitBoxOrient: "vertical",
-                  wordBreak: "break-all"
-                }}>
-                  {p.content}
-                </div>
+                {isCopied ? (
+                  <div className="blink-text">Copied!</div>
+                ) : (
+                  <div style={{ 
+                    overflow: "hidden", 
+                    display: "-webkit-box", 
+                    WebkitLineClamp: 3, 
+                    WebkitBoxOrient: "vertical",
+                    wordBreak: "break-all",
+                    width: "100%"
+                  }}>
+                    {p.content}
+                  </div>
+                )}
               </div>
             )
           })}
