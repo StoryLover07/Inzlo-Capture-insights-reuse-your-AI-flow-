@@ -210,8 +210,8 @@ export default function Popup() {
           }
           .source-tooltip {
             position: absolute;
-            bottom: 90%;
-            left: 5px; /* 👈 본체는 왼쪽으로 바짝 붙임 */
+            bottom: 110%; /* 👈 조금 더 위로 띄움 */
+            left: -20px;  /* 👈 본체를 왼쪽 밖으로 더 밀어냄 */
             background: rgba(0, 0, 0, 0.85);
             color: #fff;
             padding: 6px 12px;
@@ -231,7 +231,8 @@ export default function Popup() {
             content: '';
             position: absolute;
             top: 100%;
-            left: 35px; /* 👈 화살표를 오른쪽으로 옮겨서 태그를 가리키게 함 */
+            left: auto;
+            right: 15px; /* 👈 말풍선의 오른쪽 끝에서 꼬리가 나오게 함 */
             border-width: 5px;
             border-style: solid;
             border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
