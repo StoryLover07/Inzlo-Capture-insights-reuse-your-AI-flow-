@@ -258,10 +258,12 @@ export default function Popup() {
     return (
       <div key={p.id} onClick={() => handleCopy(p.id, p.content)} className={`prompt-item ${isCopied ? "glow-item" : ""}`}
         style={{
-          position: "relative", border: isSelected ? "1px solid #1890ff" : (isDarkMode ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.05)"),
+          position: "relative", 
+          boxShadow: isSelected ? "inset 0 0 0 1px #1890ff" : (isDarkMode ? "inset 0 0 0 1px rgba(255,255,255,0.1)" : "inset 0 0 0 1px rgba(0,0,0,0.05)"),
+          border: "none",
           borderRadius: "10px", padding: "12px 16px 28px 16px", marginBottom: "10px", cursor: "copy", fontSize: "13px",
           lineHeight: "1.5", backgroundColor: isSelected ? (isDarkMode ? "#112233" : "#f0f7ff") : (isDarkMode ? "#1a1a1a" : "#fff"),
-          transition: "all 0.2s ease", boxShadow: isSelected ? "0 4px 12px rgba(24, 144, 255, 0.1)" : "0 2px 4px rgba(0,0,0,0.02)",
+          transition: "all 0.2s ease", 
           display: "flex", alignItems: "center", minHeight: "50px", overflow: "hidden"
         }}>
         {/* ⚡ Selection Bar (Thinned to 3px) */}
@@ -290,11 +292,12 @@ export default function Popup() {
   return (
     <div style={{ width: "340px", padding: "16px", fontFamily: "'Inter', sans-serif", backgroundColor: isDarkMode ? "#121212" : "#fff", color: isDarkMode ? "#fff" : "#333", minHeight: "550px", transition: "all 0.3s ease" }}>
       <style>{`
+        * { box-sizing: border-box; } /* 👈 모든 요소 크기 계산 일치 */
         @keyframes glow-animation { 0% { border-color: #f0f0f0; } 30% { border-color: #ff00ea; } 60% { border-color: #00d2ff; } 100% { border-color: #f0f0f0; } }
         @keyframes blink-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         .glow-item { animation: glow-animation 1s ease forwards; }
         .blink-text { animation: blink-animation 0.5s ease infinite; font-weight: bold; color: #1890ff; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 45px; }
-        .tag-btn { padding: 6px 12px; font-size: 11px; border-radius: 20px; border: 1px solid #eee; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-weight: 700; }
+        .tag-btn { padding: 6px 12px; font-size: 11px; border-radius: 20px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); border: none; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-weight: 700; }
         .copy-hint { position: absolute; right: 12px; bottom: 8px; font-size: 10px; color: #1890ff; opacity: 0; transition: opacity 0.2s; }
         .prompt-item:hover .copy-hint { opacity: 1; }
         .source-layer { position: absolute; bottom: 0; left: 0; width: 100%; height: 28px; background: rgba(0, 0, 0, 0.75); color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; transform: translateY(100%); transition: transform 0.3s; z-index: 20; text-decoration: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
@@ -315,7 +318,7 @@ export default function Popup() {
         .section-header { display: flex; align-items: center; cursor: pointer; user-select: none; margin-bottom: 10px; padding: 0 4px; }
         .resizer-bar { height: 10px; width: 100%; cursor: row-resize; background: transparent; display: flex; align-items: center; justify-content: center; margin: 2px 0; }
         .resizer-bar::after { content: ""; width: 40px; height: 3px; background: #ddd; border-radius: 4px; }
-        input { box-sizing: border-box; } /* 👈 검색바 길이 문제 해결 */
+        input { box-sizing: border-box; outline: none; border: none; } /* 👈 기본 테두리 제거 */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
 
@@ -366,8 +369,8 @@ export default function Popup() {
           <div style={{ marginBottom: "16px" }}>
             <input type="text" placeholder={`Search in ${selectedTag}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
               style={{ 
-                width: "100%", padding: "8px 12px", borderRadius: "8px", fontSize: "13px", outline: "none", 
-                border: isDarkMode ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)", 
+                width: "100%", padding: "8px 12px", borderRadius: "8px", fontSize: "13px", outline: "none", border: "none",
+                boxShadow: isDarkMode ? "inset 0 0 0 1px rgba(255,255,255,0.08)" : "inset 0 0 0 1px rgba(0,0,0,0.08)", 
                 backgroundColor: isDarkMode ? "#1a1a1a" : "#fff", 
                 color: isDarkMode ? "#fff" : "#333", marginBottom: "10px" 
               }} 
