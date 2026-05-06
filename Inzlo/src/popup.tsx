@@ -314,6 +314,7 @@ export default function Popup() {
         .section-header { display: flex; align-items: center; cursor: pointer; user-select: none; margin-bottom: 10px; padding: 0 4px; }
         .resizer-bar { height: 10px; width: 100%; cursor: row-resize; background: transparent; display: flex; align-items: center; justify-content: center; margin: 2px 0; }
         .resizer-bar::after { content: ""; width: 40px; height: 3px; background: #ddd; border-radius: 4px; }
+        input { box-sizing: border-box; } /* 👈 검색바 길이 문제 해결 */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
 
