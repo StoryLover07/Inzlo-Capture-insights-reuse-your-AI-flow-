@@ -6,6 +6,40 @@ export const config: PlasmoCSConfig = {
 
 const PANEL_ID = "inzlo-suggestion-panel"
 const CAPTURE_BTN_ID = "inzlo-capture-btn"
+const SUCCESS_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"
+
+// --- 🔊 Sound Logic ---
+const playCopySound = async () => {
+  try {
+    const context = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const response = await fetch(SUCCESS_SOUND_URL)
+    const arrayBuffer = await response.arrayBuffer()
+    const audioBuffer = await context.decodeAudioData(arrayBuffer)
+    
+    const channelCount = audioBuffer.numberOfChannels
+    const newBuffer = context.createBuffer(channelCount, audioBuffer.length, audioBuffer.sampleRate)
+    
+    for (let i = 0; i < channelCount; i++) {
+      const channelData = audioBuffer.getChannelData(i)
+      const reversedData = newBuffer.getChannelData(i)
+      for (let j = 0, k = channelData.length - 1; k >= 0; j++, k--) {
+        reversedData[j] = channelData[k]
+      }
+    }
+
+    const source = context.createBufferSource()
+    source.buffer = newBuffer
+    const gainNode = context.createGain()
+    gainNode.gain.setValueAtTime(0.3, context.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + newBuffer.duration)
+    
+    source.connect(gainNode)
+    gainNode.connect(context.destination)
+    source.start()
+  } catch (e) {
+    console.error("Audio failed", e)
+  }
+}
 
 // --- 🎯 Context & Suggestion Panel Logic ---
 
@@ -31,15 +65,13 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   const currentUrl = window.location.href
   const currentDomain = getDomain(currentUrl)
 
-  // 🧠 우선순위 필터링 (개수 제한 해제)
   const siteSpecific = prompts.filter(p => p.url && getDomain(p.url) === currentDomain)
   const contextSpecific = prompts.filter(p => 
     (p.tag || "").toLowerCase() === context.toLowerCase() && 
     !siteSpecific.find(s => s.id === p.id)
   )
 
-  const filtered = [...siteSpecific, ...contextSpecific] // 모든 항목 포함
-
+  const filtered = [...siteSpecific, ...contextSpecific]
   if (filtered.length === 0) return
 
   const bgColor = isDarkMode ? "#1a1a1a" : "#ffffff"
@@ -78,15 +110,16 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   const styleSheet = document.createElement("style")
   styleSheet.textContent = `
     @keyframes inzloFadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes inzloBlink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     .inzlo-item:hover { background: ${isDarkMode ? "#333" : "#f0f7ff"} !important; border-color: #1890ff !important; transform: translateY(-1px); }
     .inzlo-item:active { transform: scale(0.98); }
     .inzlo-close:hover { background: ${isDarkMode ? "#333" : "#fff1f0"}; color: #ff4d4f !important; }
+    .inzlo-copied-text { animation: inzloBlink 0.5s ease infinite; font-weight: bold; color: #1890ff; text-align: center; width: 100%; }
     
     #inzlo-list::-webkit-scrollbar { width: 4px; }
     #inzlo-list::-webkit-scrollbar-track { background: transparent; }
     #inzlo-list::-webkit-scrollbar-thumb { background: ${isDarkMode ? "#444" : "#ddd"}; border-radius: 10px; }
     #inzlo-list::-webkit-scrollbar-thumb:hover { background: #1890ff; }
-
     .inzlo-custom-input::placeholder { color: rgba(255,255,255,0.5) !important; }
   `
   document.head.appendChild(styleSheet)
@@ -128,10 +161,14 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 
     item.addEventListener("click", () => {
       navigator.clipboard.writeText(p.content)
-      const originalText = contentDiv.innerText
-      item.style.borderColor = "#34C759"
-      contentDiv.innerText = "✅ Copied!"
-      setTimeout(() => { contentDiv.innerText = originalText; item.style.borderColor = isSiteSpecific ? '#1890ff' : borderColor; }, 1500)
+      playCopySound()
+      const originalHTML = item.innerHTML
+      item.innerHTML = `<div class="inzlo-copied-text">Copied!</div>`
+      item.style.borderColor = "#1890ff"
+      setTimeout(() => { 
+        item.innerHTML = originalHTML
+        item.style.borderColor = isSiteSpecific ? '#1890ff' : borderColor
+      }, 1000)
     })
     list.appendChild(item)
   })
@@ -192,7 +229,7 @@ const expandToTagBar = (btn: HTMLElement, text: string) => {
   btn.innerHTML = ""
   btn.style.padding = "6px"
   btn.style.cursor = "default"
-  btn.style.background = "#000" // 👈 배경색 블랙으로 변경
+  btn.style.background = "#000"
   btn.style.boxShadow = "0 10px 25px rgba(0,0,0,0.5)"
   
   const container = document.createElement("div")
@@ -217,12 +254,8 @@ const expandToTagBar = (btn: HTMLElement, text: string) => {
 
   const input = document.createElement("input")
   input.placeholder = "+ Custom"
-  input.style.cssText = "width: 75px; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.5); color: #fff; font-size: 11px; outline: none; padding: 2px 4px;"
-  // 👈 입력창 글씨색 화이트로 변경
-  
-  // 플레이스홀더 색상 조절을 위한 클래스 추가 (선택사항)
   input.className = "inzlo-custom-input"
-  
+  input.style.cssText = "width: 75px; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.5); color: #fff; font-size: 11px; outline: none; padding: 2px 4px;"
   input.onmousedown = (e) => e.stopPropagation()
   input.onclick = (e) => e.stopPropagation()
   input.onkeydown = (e) => {
@@ -293,11 +326,9 @@ document.addEventListener("mousedown", (e) => {
 
 init()
 
-// ⚡ 설정 변경 실시간 감시 및 반영
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local") {
     const keys = Object.keys(changes)
-    // 인즐로 관련 설정이 하나라도 바뀌면 즉시 init 실행
     if (keys.some(k => k.startsWith("inzlo_"))) {
       init()
     }
