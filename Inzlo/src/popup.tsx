@@ -441,12 +441,15 @@ export default function Popup() {
             margin-top: 5px;
           }
           .others-section .prompt-item {
-            background-color: #1a1a1a !important;
+            background: linear-gradient(145deg, #434343, #121212) !important;
             border-color: #333 !important;
-            color: #ccc !important;
+            color: #e0e0e0 !important;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.2) !important;
           }
           .others-section .prompt-item:hover {
+            background: linear-gradient(145deg, #4d4d4d, #1a1a1a) !important;
             color: #1890ff !important;
+            border-color: #444 !important;
           }
 
           body, html {
