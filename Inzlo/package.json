@@ -25,7 +25,8 @@
   },
   "manifest": {
     "permissions": [
-      "storage"
+      "storage",
+      "activeTab"
     ],
     "host_permissions": [
       "https://*/*"

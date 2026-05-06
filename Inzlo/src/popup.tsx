@@ -39,6 +39,7 @@ export default function Popup() {
   const toggleDarkMode = (val: boolean) => {
     setIsDarkMode(val)
     chrome.storage.local.set({ inzlo_darkmode: val })
+    playCheckSound() // 👈 효과음 추가
   }
 
   const detectContext = () => {
@@ -46,6 +47,10 @@ export default function Popup() {
       const url = tabs[0]?.url || ""
       let context = "ALL"
       if (url.includes("chatgpt.com") || url.includes("chat.openai.com")) {
+        context = "AI"
+      } else if (url.includes("claude.ai")) {
+        context = "AI"
+      } else if (url.includes("gemini.google.com")) {
         context = "AI"
       } else if (url.includes("mail.google.com")) {
         context = "Email"
@@ -69,12 +74,6 @@ export default function Popup() {
 
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
-  const playSuccessSound = () => {
-    const audio = new Audio(SUCCESS_SOUND_URL)
-    audio.volume = 0.4
-    audio.play().catch(() => {})
-  }
-
   const playDeleteSound = () => {
     const audio = new Audio(TRASH_SOUND_URL)
     audio.volume = 0.5
@@ -93,13 +92,10 @@ export default function Popup() {
       const response = await fetch(SUCCESS_SOUND_URL)
       const arrayBuffer = await response.arrayBuffer()
       const audioBuffer = await context.decodeAudioData(arrayBuffer)
-      
       const source = context.createBufferSource()
       const gainNode = context.createGain()
-      
       const channelCount = audioBuffer.numberOfChannels
       const newBuffer = context.createBuffer(channelCount, audioBuffer.length, audioBuffer.sampleRate)
-      
       for (let i = 0; i < channelCount; i++) {
         const channelData = audioBuffer.getChannelData(i)
         const reversedData = newBuffer.getChannelData(i)
@@ -107,16 +103,12 @@ export default function Popup() {
           reversedData[j] = channelData[k]
         }
       }
-      
       source.buffer = newBuffer
-      
       const duration = newBuffer.duration
       gainNode.gain.setValueAtTime(0.3, context.currentTime)
       gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + duration)
-      
       source.connect(gainNode)
       gainNode.connect(context.destination)
-      
       source.start()
     } catch (e) {
       console.error("Reverse audio failed", e)
@@ -176,14 +168,20 @@ export default function Popup() {
 
   const baseFiltered = getFilteredItems(prompts)
   
+  // 👈 Logic Fix: Separate Recommended vs Non-recommended
   const recommendedItems = baseFiltered.filter(p => {
     const itemTag = (p.tag || "General").toLowerCase()
-    return currentContext === "ALL" || itemTag === currentContext.toLowerCase()
+    // AI 사이트면 AI 태그, Email 사이트면 Email 태그, ALL이면 General 태그를 추천
+    if (currentContext === "AI") return itemTag === "ai"
+    if (currentContext === "Email") return itemTag === "email"
+    return itemTag === "general" // ALL context일 때
   })
 
   const otherItems = baseFiltered.filter(p => {
     const itemTag = (p.tag || "General").toLowerCase()
-    return currentContext !== "ALL" && itemTag !== currentContext.toLowerCase()
+    if (currentContext === "AI") return itemTag !== "ai"
+    if (currentContext === "Email") return itemTag !== "email"
+    return itemTag !== "general" // ALL context일 때
   })
 
   const tags = ["All", "General", "AI", "Email", "Code"]
@@ -387,7 +385,7 @@ export default function Popup() {
             transition: transform 0.3s ease;
             margin-left: 6px;
           }
-          .arrow-up { transform: rotate(180deg); }
+          .arrow-right { transform: rotate(-90deg); }
           .arrow-down { transform: rotate(0deg); }
           
           .section-header {
@@ -396,30 +394,29 @@ export default function Popup() {
             cursor: pointer;
             user-select: none;
             margin-bottom: 10px;
+            padding: 0 4px; /* 👈 align with content */
           }
           
           .scroll-area {
-            max-height: 155px; /* 👈 2 items limit (~70px each) */
             overflow-y: auto;
             padding-right: 4px;
-            transition: max-height 0.3s ease;
+            transition: all 0.3s ease;
           }
           .scroll-area::-webkit-scrollbar { width: 4px; }
           .scroll-area::-webkit-scrollbar-thumb { background: #eee; border-radius: 10px; }
           
-          input { box-sizing: border-box; } /* 👈 prevent overflow */
           .apple-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
           .apple-switch input { opacity: 0; width: 0; height: 0; }
           .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
           .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
           input:checked + .slider { background-color: #34C759; }
           input:checked + .slider:before { transform: translateX(18px); }
+          input { box-sizing: border-box; }
           
           .others-section {
-            background-color: #000;
             border-radius: 12px;
-            padding: 12px;
-            margin-top: 15px;
+            padding: 4px 0;
+            margin-top: 5px;
           }
           .others-section .prompt-item {
             background-color: #1a1a1a !important;
@@ -429,9 +426,12 @@ export default function Popup() {
           .others-section .prompt-item:hover {
             color: #1890ff !important;
           }
-          .others-section .source-tooltip {
-            background: rgba(255,255,255,0.9) !important;
-            color: #000 !important;
+
+          body, html {
+            margin: 0;
+            padding: 0;
+            border: none;
+            background-color: transparent;
           }
         `}
       </style>
@@ -442,7 +442,7 @@ export default function Popup() {
         justifyContent: "space-between", 
         alignItems: "center", 
         marginBottom: "16px",
-        borderBottom: isDarkMode ? "1px solid #333" : "none",
+        borderBottom: isDarkMode ? "1px solid #222" : "none",
         paddingBottom: isDarkMode ? "8px" : "0"
       }}>
         <div>
@@ -465,7 +465,10 @@ export default function Popup() {
                 </button>
               )}
               <div 
-                onClick={() => setShowSettings(!showSettings)} 
+                onClick={() => {
+                  setShowSettings(!showSettings)
+                  playCheckSound()
+                }} 
                 style={{ cursor: "pointer", fontSize: "18px", padding: "4px", color: isDarkMode ? "#fff" : "#333" }}
               >
                 {showSettings ? "✕" : "⚙️"}
@@ -488,7 +491,7 @@ export default function Popup() {
           <p style={{ fontSize: "11px", color: "#999", marginTop: "40px", textAlign: "center" }}>Inzlo v1.2 · Pro Edition</p>
         </div>
       ) : (
-        <>
+        <div style={{ height: "460px", display: "flex", flexDirection: "column" }}>
           {/* Search & Tags */}
           <div style={{ marginBottom: "16px" }}>
             <input 
@@ -527,22 +530,25 @@ export default function Popup() {
           ) : prompts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "#999" }}>No insights yet!</div>
           ) : (
-            <div style={{ height: "420px", overflowY: "auto", paddingRight: "4px", paddingTop: "10px" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px", minHeight: 0 }}>
               {/* 🏆 Recommended Section */}
-              {recommendedItems.length > 0 && (
-                <div style={{ marginBottom: "20px" }}>
-                  <div 
-                    className="section-header"
-                    onClick={() => setRecExpanded(!recExpanded)}
-                  >
+              {(recommendedItems.length > 0 || currentContext !== "ALL") && (
+                <div style={{ 
+                  display: "flex", 
+                  flexDirection: "column", 
+                  flex: recExpanded ? (othersExpanded ? 1 : 1.5) : "none",
+                  minHeight: recExpanded ? "100px" : "auto"
+                }}>
+                  <div className="section-header" onClick={() => { setRecExpanded(!recExpanded); playCheckSound(); }}>
                     <div style={{ fontSize: "11px", fontWeight: "800", color: "#1890ff", textTransform: "uppercase" }}>
                       Recommended for {currentContext}
                     </div>
-                    <span className={`arrow-icon ${recExpanded ? 'arrow-down' : 'arrow-right'}`} style={{ color: "#1890ff", marginLeft: "8px", fontSize: "10px", transform: recExpanded ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.3s" }}>▼</span>
+                    <span className={`arrow-icon ${recExpanded ? 'arrow-down' : 'arrow-right'}`}>▼</span>
                   </div>
                   {recExpanded && (
-                    <div className="scroll-area">
+                    <div className="scroll-area" style={{ flex: 1 }}>
                       {recommendedItems.map(p => renderPromptItem(p))}
+                      {recommendedItems.length === 0 && <div style={{ fontSize: "11px", color: "#999", padding: "10px" }}>No context matches.</div>}
                     </div>
                   )}
                 </div>
@@ -550,18 +556,20 @@ export default function Popup() {
 
               {/* 🌑 Non-recommended Section */}
               {otherItems.length > 0 && (
-                <div className="others-section">
-                  <div 
-                    className="section-header"
-                    onClick={() => setOthersExpanded(!othersExpanded)}
-                  >
+                <div className="others-section" style={{ 
+                  display: "flex", 
+                  flexDirection: "column", 
+                  flex: othersExpanded ? (recExpanded ? 1 : 1.5) : "none",
+                  minHeight: othersExpanded ? "100px" : "auto"
+                }}>
+                  <div className="section-header" onClick={() => { setOthersExpanded(!othersExpanded); playCheckSound(); }}>
                     <div style={{ fontSize: "11px", fontWeight: "800", color: "#999", textTransform: "uppercase" }}>
                       Non-recommended for {currentContext}
                     </div>
-                    <span className={`arrow-icon ${othersExpanded ? 'arrow-down' : 'arrow-right'}`} style={{ color: "#1890ff", marginLeft: "8px", fontSize: "10px", transform: othersExpanded ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.3s" }}>▼</span>
+                    <span className={`arrow-icon ${othersExpanded ? 'arrow-down' : 'arrow-right'}`}>▼</span>
                   </div>
                   {othersExpanded && (
-                    <div className="scroll-area">
+                    <div className="scroll-area" style={{ flex: 1 }}>
                       {otherItems.map(p => renderPromptItem(p))}
                     </div>
                   )}
@@ -569,7 +577,7 @@ export default function Popup() {
               )}
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   )
