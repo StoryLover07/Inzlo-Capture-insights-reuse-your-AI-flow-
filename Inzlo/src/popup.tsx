@@ -335,7 +335,7 @@ export default function Popup() {
                   position: "relative",
                   border: isSelected ? "2px solid #1890ff" : "1px solid #f0f0f0",
                   borderRadius: "10px",
-                  padding: "12px 12px 12px 36px",
+                  padding: "12px 12px 24px 36px", // 👈 하단 패딩을 24px로 대폭 확대
                   marginBottom: "10px",
                   cursor: "pointer",
                   fontSize: "13px",
@@ -345,7 +345,7 @@ export default function Popup() {
                   boxShadow: isCopied ? "none" : "0 2px 4px rgba(0,0,0,0.02)",
                   display: "flex",
                   alignItems: "center",
-                  minHeight: "45px"
+                  minHeight: "50px"
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) e.currentTarget.style.backgroundColor = "#fafafa"
@@ -407,7 +407,7 @@ export default function Popup() {
                         WebkitLineClamp: 3, 
                         WebkitBoxOrient: "vertical",
                         wordBreak: "break-all",
-                        paddingBottom: "12px" // 👈 Click to Copy 문구를 위한 공간 확보
+                        marginBottom: "4px" // 👈 Click to Copy 문구와 겹치지 않게 아래 여백 추가
                       }}>
                         {p.content}
                       </div>
