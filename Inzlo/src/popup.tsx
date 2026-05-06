@@ -258,10 +258,12 @@ export default function Popup() {
     return (
       <div key={p.id} onClick={() => handleCopy(p.id, p.content)} className={`prompt-item ${isCopied ? "glow-item" : ""}`}
         style={{
-          position: "relative", border: isSelected ? "1px solid #1890ff" : (isDarkMode ? "1px solid #333" : "1px solid #f0f0f0"),
+          position: "relative", 
+          boxShadow: isSelected ? "inset 0 0 0 1px #1890ff" : (isDarkMode ? "inset 0 0 0 1px rgba(255,255,255,0.1)" : "inset 0 0 0 1px rgba(0,0,0,0.05)"),
+          border: "none",
           borderRadius: "10px", padding: "12px 16px 28px 16px", marginBottom: "10px", cursor: "copy", fontSize: "13px",
           lineHeight: "1.5", backgroundColor: isSelected ? (isDarkMode ? "#112233" : "#f0f7ff") : (isDarkMode ? "#1a1a1a" : "#fff"),
-          transition: "all 0.2s ease", boxShadow: isSelected ? "0 4px 12px rgba(24, 144, 255, 0.1)" : "0 2px 4px rgba(0,0,0,0.02)",
+          transition: "all 0.2s ease", 
           display: "flex", alignItems: "center", minHeight: "50px", overflow: "hidden"
         }}>
         <div style={{ position: "absolute", left: 0, top: 0, width: "6px", height: "100%", backgroundColor: isSelected ? "#1890ff" : "transparent", transition: "all 0.2s", zIndex: 10 }} />
@@ -363,7 +365,7 @@ export default function Popup() {
       ) : (
         <div style={{ height: "460px", display: "flex", flexDirection: "column" }}>
           <div style={{ marginBottom: "16px" }}>
-            <input type="text" placeholder={`Search in ${selectedTag}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", fontSize: "13px", outline: "none", border: isDarkMode ? "1px solid #333" : "1px solid #ddd", backgroundColor: isDarkMode ? "#1a1a1a" : "#fff", color: isDarkMode ? "#fff" : "#333", marginBottom: "10px" }} />
+            <input type="text" placeholder={`Search in ${selectedTag}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", fontSize: "13px", outline: "none", border: "none", boxShadow: isDarkMode ? "inset 0 0 0 1px rgba(255,255,255,0.08)" : "inset 0 0 0 1px rgba(0,0,0,0.08)", backgroundColor: isDarkMode ? "#1a1a1a" : "#fff", color: isDarkMode ? "#fff" : "#333", marginBottom: "10px" }} />
             <div className="tag-filter-container" style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px" }}>
               {dynamicTags.map(t => (
                 <button key={t} onClick={() => handleTagClick(t)} onContextMenu={(e) => handleContextMenu(e, t)} className="tag-btn" style={{ backgroundColor: selectedTag === t ? "#1890ff" : (isDarkMode ? "#1a1a1a" : "#fff"), color: selectedTag === t ? "#fff" : (isDarkMode ? "#ccc" : "#666"), borderColor: selectedTag === t ? "#1890ff" : (isDarkMode ? "#333" : "#eee") }}>{t}</button>
