@@ -515,9 +515,26 @@ export default function Popup() {
         
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           {selectedIds.size > 0 ? (
-            <button onClick={deleteSelected} style={{ backgroundColor: "#ff4d4f", color: "#fff", border: "none", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", cursor: "pointer", fontWeight: "600" }}>
-              Delete ({selectedIds.size})
-            </button>
+            <>
+              <button 
+                onClick={() => { setSelectedIds(new Set()); playCheckSound(); }}
+                style={{
+                  backgroundColor: "transparent",
+                  color: isDarkMode ? "#999" : "#666",
+                  border: `1px solid ${isDarkMode ? "#333" : "#ddd"}`,
+                  borderRadius: "20px",
+                  padding: "4px 10px",
+                  fontSize: "11px",
+                  cursor: "pointer",
+                  fontWeight: "600"
+                }}
+              >
+                Cancel
+              </button>
+              <button onClick={deleteSelected} style={{ backgroundColor: "#ff4d4f", color: "#fff", border: "none", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", cursor: "pointer", fontWeight: "600" }}>
+                Delete ({selectedIds.size})
+              </button>
+            </>
           ) : (
             <>
               {!showSettings && (
