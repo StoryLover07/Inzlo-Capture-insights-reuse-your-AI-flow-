@@ -468,26 +468,32 @@ export default function Popup() {
             background-color: transparent;
           }
           .resizer-bar {
-            height: 4px;
+            height: 10px; /* 👈 클릭 영역을 더 넓게 확장 */
             width: 100%;
             cursor: row-resize;
             background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 4px 0;
-            transition: background 0.2s;
+            margin: 2px 0;
+            transition: all 0.2s;
+            z-index: 50;
           }
-          .resizer-bar:hover { background: rgba(24, 144, 255, 0.1); }
+          .resizer-bar:hover { background: rgba(24, 144, 255, 0.05); }
           .resizer-bar::after {
             content: "";
-            width: 30px;
-            height: 2px;
-            background: ${isDarkMode ? "#333" : "#eee"};
-            border-radius: 2px;
-            transition: background 0.2s;
+            width: 40px; /* 👈 핸들 길이 확장 */
+            height: 3px; /* 👈 기본 두께 */
+            background: ${isDarkMode ? "#444" : "#ddd"};
+            border-radius: 4px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           }
-          .resizer-bar:hover::after { background: #1890ff; }
+          .resizer-bar:hover::after { 
+            background: #1890ff; 
+            width: 60px; /* 👈 호버 시 더 길어짐 */
+            height: 5px; /* 👈 호버 시 더 두꺼워짐 */
+            box-shadow: 0 0 8px rgba(24, 144, 255, 0.3);
+          }
         `}
       </style>
 
