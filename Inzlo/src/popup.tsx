@@ -42,8 +42,11 @@ export default function Popup() {
       const newHeight = Math.max(50, Math.min(400, e.clientY - 150))
       setRecHeight(newHeight)
     }
-    const handleMouseUp = () => setIsDragging(false)
-    const closeMenu = () => setContextMenu(null)
+    const closeMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.closest('.context-menu')) return // 👈 메뉴 내부 클릭시 닫지 않음
+      setContextMenu(null)
+    }
 
     if (isDragging) {
       window.addEventListener("mousemove", handleMouseMove)
@@ -400,7 +403,7 @@ export default function Popup() {
       )}
 
       {contextMenu && (
-        <div style={{ position: "fixed", top: contextMenu.y, left: contextMenu.x, backgroundColor: isDarkMode ? "#262626" : "#fff", border: `1px solid ${isDarkMode ? "#444" : "#eee"}`, boxShadow: "0 4px 12px rgba(0,0,0,0.15)", borderRadius: "8px", zIndex: 9999, padding: "2px", minWidth: "90px", animation: "fadeIn 0.1s ease" }} onClick={(e) => e.stopPropagation()}>
+        <div className="context-menu" style={{ position: "fixed", top: contextMenu.y, left: contextMenu.x, backgroundColor: isDarkMode ? "#262626" : "#fff", border: `1px solid ${isDarkMode ? "#444" : "#eee"}`, boxShadow: "0 4px 12px rgba(0,0,0,0.15)", borderRadius: "8px", zIndex: 9999, padding: "2px", minWidth: "90px", animation: "fadeIn 0.1s ease" }} onClick={(e) => e.stopPropagation()}>
           <div onClick={() => handleDeleteTag(contextMenu.tag)} onMouseOver={(e) => e.currentTarget.style.backgroundColor = isDarkMode ? "#333" : "#fff1f0"} onMouseOut={(e) => e.currentTarget.style.backgroundColor = "transparent"} style={{ padding: "6px 10px", fontSize: "11px", color: "#ff4d4f", cursor: "pointer", borderRadius: "6px", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
             <span>🗑️</span> Delete
           </div>
