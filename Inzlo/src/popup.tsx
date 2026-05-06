@@ -188,6 +188,19 @@ export default function Popup() {
             color: #fff;
             border-color: #1890ff;
           }
+          .copy-hint {
+            position: absolute;
+            right: 12px;
+            bottom: 8px;
+            font-size: 10px;
+            color: #1890ff;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-weight: 500;
+          }
+          .prompt-item:hover .copy-hint {
+            opacity: 1;
+          }
         `}
       </style>
 
@@ -282,7 +295,7 @@ export default function Popup() {
               <div
                 key={p.id}
                 onClick={() => handleCopy(p.id, p.content)}
-                className={isCopied ? "glow-item" : ""}
+                className={`prompt-item ${isCopied ? "glow-item" : ""}`}
                 style={{
                   position: "relative",
                   border: isSelected ? "2px solid #1890ff" : "1px solid #f0f0f0",
@@ -342,26 +355,29 @@ export default function Popup() {
                 {isCopied ? (
                   <div className="blink-text">Copied!</div>
                 ) : (
-                  <div style={{ width: "100%" }}>
-                    <div style={{ 
-                      fontSize: "10px", 
-                      color: "#1890ff", 
-                      fontWeight: "bold", 
-                      marginBottom: "2px",
-                      textTransform: "uppercase"
-                    }}>
-                      [{p.tag || "General"}]
+                  <>
+                    <div style={{ width: "100%" }}>
+                      <div style={{ 
+                        fontSize: "10px", 
+                        color: "#1890ff", 
+                        fontWeight: "bold", 
+                        marginBottom: "2px",
+                        textTransform: "uppercase"
+                      }}>
+                        [{p.tag || "General"}]
+                      </div>
+                      <div style={{ 
+                        overflow: "hidden", 
+                        display: "-webkit-box", 
+                        WebkitLineClamp: 3, 
+                        WebkitBoxOrient: "vertical",
+                        wordBreak: "break-all"
+                      }}>
+                        {p.content}
+                      </div>
                     </div>
-                    <div style={{ 
-                      overflow: "hidden", 
-                      display: "-webkit-box", 
-                      WebkitLineClamp: 3, 
-                      WebkitBoxOrient: "vertical",
-                      wordBreak: "break-all"
-                    }}>
-                      {p.content}
-                    </div>
-                  </div>
+                    <div className="copy-hint">Click to Copy</div>
+                  </>
                 )}
               </div>
             )
