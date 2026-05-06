@@ -228,7 +228,7 @@ export default function Popup() {
           borderRadius: "10px",
           padding: "12px 16px 28px 16px",
           marginBottom: "10px",
-          cursor: "pointer",
+          cursor: "copy", // 👈 복사 아이콘으로 변경
           fontSize: "13px",
           lineHeight: "1.5",
           backgroundColor: isSelected ? (isDarkMode ? "#112233" : "#f0f7ff") : (isDarkMode ? "#1a1a1a" : "#fff"),
@@ -405,6 +405,7 @@ export default function Popup() {
             text-decoration: none;
             border-bottom-left-radius: 8px;
             border-bottom-right-radius: 8px;
+            cursor: pointer; /* 👈 링크는 손가락 모양 */
           }
           .prompt-item:hover .source-layer { transform: translateY(0); }
           .prompt-item:hover .item-checkbox { opacity: 1 !important; }
