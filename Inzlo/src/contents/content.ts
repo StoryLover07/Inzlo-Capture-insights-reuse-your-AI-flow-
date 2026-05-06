@@ -86,6 +86,8 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
     #inzlo-list::-webkit-scrollbar-track { background: transparent; }
     #inzlo-list::-webkit-scrollbar-thumb { background: ${isDarkMode ? "#444" : "#ddd"}; border-radius: 10px; }
     #inzlo-list::-webkit-scrollbar-thumb:hover { background: #1890ff; }
+
+    .inzlo-custom-input::placeholder { color: rgba(255,255,255,0.5) !important; }
   `
   document.head.appendChild(styleSheet)
 
@@ -190,6 +192,8 @@ const expandToTagBar = (btn: HTMLElement, text: string) => {
   btn.innerHTML = ""
   btn.style.padding = "6px"
   btn.style.cursor = "default"
+  btn.style.background = "#000" // 👈 배경색 블랙으로 변경
+  btn.style.boxShadow = "0 10px 25px rgba(0,0,0,0.5)"
   
   const container = document.createElement("div")
   container.style.cssText = "display: flex; align-items: center; gap: 6px; padding: 0 4px;"
@@ -200,9 +204,9 @@ const expandToTagBar = (btn: HTMLElement, text: string) => {
   uniqueTags.forEach(tag => {
     const chip = document.createElement("div")
     chip.innerText = tag
-    chip.style.cssText = "padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 12px; font-size: 11px; cursor: pointer; transition: all 0.2s;"
-    chip.onmouseover = () => chip.style.background = "rgba(255,255,255,0.4)"
-    chip.onmouseout = () => chip.style.background = "rgba(255,255,255,0.2)"
+    chip.style.cssText = "padding: 4px 10px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.9);"
+    chip.onmouseover = () => chip.style.background = "rgba(255,255,255,0.3)"
+    chip.onmouseout = () => chip.style.background = "rgba(255,255,255,0.15)"
     chip.onclick = (e) => {
       e.stopPropagation()
       savePrompt(text, tag)
@@ -213,7 +217,12 @@ const expandToTagBar = (btn: HTMLElement, text: string) => {
 
   const input = document.createElement("input")
   input.placeholder = "+ Custom"
-  input.style.cssText = "width: 75px; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.5); color: white; font-size: 11px; outline: none; padding: 2px 4px;"
+  input.style.cssText = "width: 75px; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.5); color: #fff; font-size: 11px; outline: none; padding: 2px 4px;"
+  // 👈 입력창 글씨색 화이트로 변경
+  
+  // 플레이스홀더 색상 조절을 위한 클래스 추가 (선택사항)
+  input.className = "inzlo-custom-input"
+  
   input.onmousedown = (e) => e.stopPropagation()
   input.onclick = (e) => e.stopPropagation()
   input.onkeydown = (e) => {
