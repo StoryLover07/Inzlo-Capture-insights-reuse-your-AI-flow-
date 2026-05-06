@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 type Prompt = {
   id: string
   content: string
+  tag?: string // 👈 태그 필드 추가
   createdAt: number
 }
 
@@ -10,7 +11,8 @@ export default function Popup() {
   const [prompts, setPrompts] = useState<Prompt[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [searchTerm, setSearchTerm] = useState("") // 👈 Search state
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedTag, setSelectedTag] = useState("All") // 👈 Tag state
 
   useEffect(() => {
     loadData()
@@ -119,10 +121,14 @@ export default function Popup() {
     }
   }
 
-  // 👈 Filter logic
-  const filteredPrompts = prompts.filter(p => 
-    p.content.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // 👈 Enhanced filter logic (Tag + Search)
+  const filteredPrompts = prompts.filter(p => {
+    const matchesTag = selectedTag === "All" || p.tag === selectedTag
+    const matchesSearch = p.content.toLowerCase().includes(searchTerm.toLowerCase())
+    return matchesTag && matchesSearch
+  })
+
+  const tags = ["All", "AI", "Email", "Code", "General"]
 
   return (
     <div style={{ padding: "16px", width: "340px", fontFamily: "'Inter', sans-serif", color: "#333" }}>
@@ -151,6 +157,21 @@ export default function Popup() {
           }
           input::placeholder {
             color: #ccc;
+          }
+          .tag-btn {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 20px;
+            border: 1px solid #eee;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+          }
+          .tag-btn.active {
+            background: #1890ff;
+            color: #fff;
+            border-color: #1890ff;
           }
         `}
       </style>
@@ -190,11 +211,24 @@ export default function Popup() {
         </div>
       </div>
 
+      {/* 👈 Tag Filter Row */}
+      <div style={{ display: "flex", gap: "6px", overflowX: "auto", marginBottom: "12px", paddingBottom: "4px" }}>
+        {tags.map(t => (
+          <button 
+            key={t}
+            className={`tag-btn ${selectedTag === t ? 'active' : ''}`}
+            onClick={() => setSelectedTag(t)}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
       {/* 👈 Search Bar */}
       <div style={{ marginBottom: "16px" }}>
         <input 
           type="text"
-          placeholder="Search prompts..."
+          placeholder={`Search in ${selectedTag}...`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
@@ -220,12 +254,12 @@ export default function Popup() {
       ) : filteredPrompts.length === 0 ? (
         <div style={{ textAlign: "center", padding: "40px 20px", color: "#999" }}>
           <p style={{ fontSize: "14px", marginBottom: "8px" }}>
-            {searchTerm ? "No matching prompts" : "No insights captured yet."}
+            {searchTerm || selectedTag !== "All" ? "No matching prompts" : "No insights captured yet."}
           </p>
-          {!searchTerm && <p style={{ fontSize: "12px" }}>Drag text on any page and click Save!</p>}
+          {!searchTerm && selectedTag === "All" && <p style={{ fontSize: "12px" }}>Drag text on any page and click Save!</p>}
         </div>
       ) : (
-        <div style={{ maxHeight: "400px", overflowY: "auto", paddingRight: "4px" }}>
+        <div style={{ maxHeight: "360px", overflowY: "auto", paddingRight: "4px" }}>
           {filteredPrompts.map((p) => {
             const isSelected = selectedIds.has(p.id)
             const isCopied = copiedId === p.id
@@ -293,15 +327,25 @@ export default function Popup() {
                 {isCopied ? (
                   <div className="blink-text">Copied!</div>
                 ) : (
-                  <div style={{ 
-                    overflow: "hidden", 
-                    display: "-webkit-box", 
-                    WebkitLineClamp: 3, 
-                    WebkitBoxOrient: "vertical",
-                    wordBreak: "break-all",
-                    width: "100%"
-                  }}>
-                    {p.content}
+                  <div style={{ width: "100%" }}>
+                    <div style={{ 
+                      fontSize: "10px", 
+                      color: "#1890ff", 
+                      fontWeight: "bold", 
+                      marginBottom: "2px",
+                      textTransform: "uppercase"
+                    }}>
+                      [{p.tag || "General"}]
+                    </div>
+                    <div style={{ 
+                      overflow: "hidden", 
+                      display: "-webkit-box", 
+                      WebkitLineClamp: 3, 
+                      WebkitBoxOrient: "vertical",
+                      wordBreak: "break-all"
+                    }}>
+                      {p.content}
+                    </div>
                   </div>
                 )}
               </div>

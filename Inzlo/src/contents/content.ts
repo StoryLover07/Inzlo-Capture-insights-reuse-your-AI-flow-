@@ -52,9 +52,13 @@ function showButton(x: number, y: number) {
         return
       }
 
+      // 👉 태그 입력 받기 (MVP: prompt 사용)
+      const userTag = prompt("Enter tag (AI / Email / Code):", "General") || "General"
+
       const newItem = {
         id: Date.now().toString(),
         content: selectedText,
+        tag: userTag, // 👈 태그 추가
         createdAt: Date.now()
       }
 
