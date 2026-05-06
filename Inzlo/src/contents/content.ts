@@ -115,14 +115,29 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 
   let hideTimer: any = null
   const dismissPanel = () => {
+    // 👈 마우스가 올라와 있으면 사라지지 않음
+    if (panel.matches(':hover')) {
+      startTimer()
+      return
+    }
     panel.style.animation = "inzloSlideOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards"
-    setTimeout(() => panel.remove(), 500)
+    setTimeout(() => {
+      if (!panel.matches(':hover')) panel.remove()
+      else {
+        panel.style.animation = "inzloFadeIn 0.3s ease forwards" // 복구
+        startTimer()
+      }
+    }, 500)
   }
 
   const startTimer = () => {
+    clearTimeout(hideTimer)
     hideTimer = setTimeout(dismissPanel, duration * 1000)
   }
-  const stopTimer = () => clearTimeout(hideTimer)
+  const stopTimer = () => {
+    clearTimeout(hideTimer)
+    panel.style.animation = "none" // 애니메이션 중단
+  }
 
   panel.addEventListener("mouseenter", stopTimer)
   panel.addEventListener("mouseleave", startTimer)
