@@ -24,30 +24,73 @@ export default function Popup() {
     })
   }
 
+  const SUCCESS_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"
+  const TRASH_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2544/2544-preview.mp3"
+  const CHECK_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"
+
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
   const playSuccessSound = () => {
-    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3")
-    audio.volume = 0.5
+    const audio = new Audio(SUCCESS_SOUND_URL)
+    audio.volume = 0.4
     audio.play().catch(() => {})
   }
 
   const playDeleteSound = () => {
-    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3")
+    const audio = new Audio(TRASH_SOUND_URL)
     audio.volume = 0.5
     audio.play().catch(() => {})
   }
 
-  const handleCopy = (text: string) => {
+  const playCheckSound = () => {
+    const audio = new Audio(CHECK_SOUND_URL)
+    audio.volume = 0.3
+    audio.play().catch(() => {})
+  }
+
+  // 👈 Reverse playback logic for copy
+  const playCopySound = async () => {
+    try {
+      const context = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const response = await fetch(SUCCESS_SOUND_URL)
+      const arrayBuffer = await response.arrayBuffer()
+      const audioBuffer = await context.decodeAudioData(arrayBuffer)
+      
+      const source = context.createBufferSource()
+      const channelCount = audioBuffer.numberOfChannels
+      const newBuffer = context.createBuffer(channelCount, audioBuffer.length, audioBuffer.sampleRate)
+      
+      for (let i = 0; i < channelCount; i++) {
+        const channelData = audioBuffer.getChannelData(i)
+        const reversedData = newBuffer.getChannelData(i)
+        for (let j = 0, k = channelData.length - 1; k >= 0; j++, k--) {
+          reversedData[j] = channelData[k]
+        }
+      }
+      
+      source.buffer = newBuffer
+      source.connect(context.destination)
+      source.start()
+    } catch (e) {
+      console.error("Reverse audio failed", e)
+    }
+  }
+
+  const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text)
-    // Removed alert for cleaner UX
+    setCopiedId(id)
+    playCopySound()
+    setTimeout(() => setCopiedId(null), 1000)
   }
 
   const toggleSelect = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation() // 👈 Blocks handleCopy
+    e.stopPropagation()
     const newSelected = new Set(selectedIds)
     if (newSelected.has(id)) {
       newSelected.delete(id)
     } else {
       newSelected.add(id)
+      playCheckSound() // 👈 Play check sound
     }
     setSelectedIds(newSelected)
   }
@@ -76,6 +119,20 @@ export default function Popup() {
 
   return (
     <div style={{ padding: "16px", width: "340px", fontFamily: "'Inter', sans-serif", color: "#333" }}>
+      <style>
+        {`
+          @keyframes glow-animation {
+            0% { border-color: #f0f0f0; box-shadow: 0 0 0px transparent; }
+            30% { border-color: #ff00ea; box-shadow: 0 0 10px rgba(255, 0, 234, 0.4); }
+            60% { border-color: #00d2ff; box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); }
+            100% { border-color: #f0f0f0; box-shadow: 0 0 0px transparent; }
+          }
+          .glow-item {
+            animation: glow-animation 1s ease;
+          }
+        `}
+      </style>
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
         <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>Inzlo</h2>
         <div style={{ display: "flex", gap: "8px" }}>
@@ -124,13 +181,15 @@ export default function Popup() {
         <div style={{ maxHeight: "420px", overflowY: "auto", paddingRight: "4px" }}>
           {prompts.map((p) => {
             const isSelected = selectedIds.has(p.id)
+            const isCopied = copiedId === p.id
             return (
               <div
                 key={p.id}
-                onClick={() => handleCopy(p.content)}
+                onClick={() => handleCopy(p.id, p.content)}
+                className={isCopied ? "glow-item" : ""}
                 style={{
                   position: "relative",
-                  border: isSelected ? "1px solid #1890ff" : "1px solid #f0f0f0",
+                  border: isSelected ? "2px solid #1890ff" : "1px solid #f0f0f0",
                   borderRadius: "10px",
                   padding: "12px 12px 12px 36px",
                   marginBottom: "10px",
@@ -139,7 +198,7 @@ export default function Popup() {
                   lineHeight: "1.5",
                   backgroundColor: isSelected ? "#e6f7ff" : "#fff",
                   transition: "all 0.2s ease",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.02)"
+                  boxShadow: isCopied ? "none" : "0 2px 4px rgba(0,0,0,0.02)"
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) e.currentTarget.style.backgroundColor = "#fafafa"
@@ -159,7 +218,7 @@ export default function Popup() {
                   style={{
                     position: "absolute",
                     left: "10px",
-                    top: "12px", // 👈 Better alignment
+                    top: "12px",
                     width: "18px",
                     height: "18px",
                     borderRadius: "4px",
