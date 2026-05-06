@@ -130,8 +130,10 @@ export default function Popup() {
 
   // 👈 Enhanced filter logic (Tag + Search)
   const filteredPrompts = prompts.filter(p => {
-    const itemTag = p.tag || "General" // Handle missing tags as General
-    const matchesTag = selectedTag === "All" || itemTag === selectedTag
+    const itemTag = (p.tag || "General").toLowerCase()
+    const targetTag = selectedTag.toLowerCase()
+    
+    const matchesTag = selectedTag === "All" || itemTag === targetTag
     const matchesSearch = p.content.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesTag && matchesSearch
   })
