@@ -68,9 +68,9 @@ function showButton(x: number, y: number) {
       chrome.storage.local.set({ inzlo_prompts: updated }, () => {
         console.log("Saved successfully:", selectedText)
         
-        // 👉 효과음 재생 (초기 버전)
-        const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3")
-        audio.volume = 0.5
+        // 👉 효과음 재생 (세련된 Chime 소리)
+        const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3")
+        audio.volume = 0.4
         audio.play().catch(() => {})
 
         removeButton()
