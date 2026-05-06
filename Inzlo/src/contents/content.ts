@@ -172,10 +172,10 @@ const handleMouseUp = (e: MouseEvent) => {
         padding: 8px 16px; background: #1890ff; color: white;
         font-size: 13px; font-weight: 900; border-radius: 24px;
         cursor: pointer; z-index: 2147483647;
-        box-shadow: 0 8px 20px rgba(24,144,255,0.4);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         display: flex; align-items: center; justify-content: center;
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        border: 2.5px solid white; white-space: nowrap; overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.8); white-space: nowrap; overflow: hidden;
       `
 
       btn.onclick = (event) => {
