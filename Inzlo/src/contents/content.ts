@@ -64,8 +64,26 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 
   const currentUrl = window.location.href
   const currentDomain = getDomain(currentUrl)
+  const defaultTags = ["ai", "email", "code", "general"]
 
+  // 1. 현재 사이트 데이터 추출 및 정렬
   const siteSpecific = prompts.filter(p => p.url && getDomain(p.url) === currentDomain)
+    .sort((a, b) => {
+      const aTag = (a.tag || "general").toLowerCase()
+      const bTag = (b.tag || "general").toLowerCase()
+      const ctx = context.toLowerCase()
+
+      // 가중치 계산
+      const getWeight = (tag: string) => {
+        if (!defaultTags.includes(tag)) return 0 // 1순위: 커스텀 태그 (가장 낮음=최상단)
+        if (tag === ctx) return 1               // 2순위: 컨텍스트 태그 (AI/Email/Code)
+        if (tag === "general") return 2         // 3순위: General
+        return 3                                // 기타 기본 태그
+      }
+      return getWeight(aTag) - getWeight(bTag)
+    })
+
+  // 2. 다른 사이트의 컨텍스트 일치 항목 (차선책)
   const contextSpecific = prompts.filter(p => 
     (p.tag || "").toLowerCase() === context.toLowerCase() && 
     !siteSpecific.find(s => s.id === p.id)
