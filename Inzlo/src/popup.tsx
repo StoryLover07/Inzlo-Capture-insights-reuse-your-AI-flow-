@@ -24,13 +24,25 @@ export default function Popup() {
     })
   }
 
+  const playSuccessSound = () => {
+    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3")
+    audio.volume = 0.5
+    audio.play().catch(() => {})
+  }
+
+  const playDeleteSound = () => {
+    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3")
+    audio.volume = 0.5
+    audio.play().catch(() => {})
+  }
+
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
-    // Optional: show a toast instead of alert for better UX
+    // Removed alert for cleaner UX
   }
 
   const toggleSelect = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation()
+    e.stopPropagation() // 👈 Blocks handleCopy
     const newSelected = new Set(selectedIds)
     if (newSelected.has(id)) {
       newSelected.delete(id)
@@ -47,6 +59,7 @@ export default function Popup() {
       chrome.storage.local.set({ inzlo_prompts: updated }, () => {
         setPrompts(updated)
         setSelectedIds(new Set())
+        playDeleteSound()
       })
     }
   }
@@ -56,6 +69,7 @@ export default function Popup() {
       chrome.storage.local.set({ inzlo_prompts: [] }, () => {
         setPrompts([])
         setSelectedIds(new Set())
+        playDeleteSound()
       })
     }
   }
@@ -138,14 +152,14 @@ export default function Popup() {
                   if (checkbox && !isSelected) checkbox.style.opacity = "0"
                 }}
               >
-                {/* Custom Checkbox */}
+                {/* Custom Checkbox Container */}
                 <div
                   className="item-checkbox"
                   onClick={(e) => toggleSelect(p.id, e)}
                   style={{
                     position: "absolute",
                     left: "10px",
-                    top: "14px",
+                    top: "12px", // 👈 Better alignment
                     width: "18px",
                     height: "18px",
                     borderRadius: "4px",
@@ -155,7 +169,8 @@ export default function Popup() {
                     alignItems: "center",
                     justifyContent: "center",
                     transition: "all 0.2s",
-                    opacity: isSelected ? "1" : "0", // Shown on hover or if selected
+                    opacity: isSelected ? "1" : "0",
+                    zIndex: 10
                   }}
                 >
                   {isSelected && (

@@ -63,7 +63,13 @@ function showButton(x: number, y: number) {
       // 👉 저장
       chrome.storage.local.set({ inzlo_prompts: updated }, () => {
         console.log("Saved successfully:", selectedText)
-        alert("Inzlo: Saved successfully!")
+        
+        // 👉 효과음 재생
+        const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3")
+        audio.volume = 0.5
+        audio.play().catch(() => {})
+
+        removeButton()
       })
     })
 
