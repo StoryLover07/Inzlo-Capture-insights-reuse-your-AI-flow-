@@ -175,12 +175,17 @@ const expandToTagBar = (btn: HTMLElement, text: string) => {
   const input = document.createElement("input")
   input.placeholder = "+ Custom"
   input.style.cssText = "width: 75px; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.5); color: white; font-size: 11px; outline: none; padding: 2px 4px;"
-  input.onmousedown = (e) => e.stopPropagation() // 🎯 클릭 시 사라짐 방지
+  input.onmousedown = (e) => e.stopPropagation()
   input.onclick = (e) => e.stopPropagation()
   input.onkeydown = (e) => {
-    if (e.key === "Enter" && input.value.trim()) {
-      savePrompt(text, input.value.trim())
-      showSavedFeedback(btn)
+    e.stopPropagation() // 🎯 사이트의 다른 이벤트와 충돌 방지
+    if (e.key === "Enter") {
+      e.preventDefault()
+      const val = input.value.trim()
+      if (val) {
+        savePrompt(text, val)
+        showSavedFeedback(btn)
+      }
     }
   }
   container.appendChild(input)
