@@ -27,15 +27,14 @@ export default function Popup() {
     })
   }
 
-  const SUCCESS_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"
-  const TRASH_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2544/2544-preview.mp3"
-  const CHECK_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"
+  const SUCCESS_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+  const TRASH_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"
 
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const playSuccessSound = () => {
     const audio = new Audio(SUCCESS_SOUND_URL)
-    audio.volume = 0.4
+    audio.volume = 0.5
     audio.play().catch(() => {})
   }
 
@@ -46,38 +45,15 @@ export default function Popup() {
   }
 
   const playCheckSound = () => {
-    const audio = new Audio(CHECK_SOUND_URL)
+    const audio = new Audio(TRASH_SOUND_URL) // Use trash sound for check as it was before refinements
     audio.volume = 0.3
     audio.play().catch(() => {})
   }
 
-  const playCopySound = async () => {
-    try {
-      const context = new (window.AudioContext || (window as any).webkitAudioContext)()
-      const response = await fetch(SUCCESS_SOUND_URL)
-      const arrayBuffer = await response.arrayBuffer()
-      const audioBuffer = await context.decodeAudioData(arrayBuffer)
-      const source = context.createBufferSource()
-      const gainNode = context.createGain()
-      const channelCount = audioBuffer.numberOfChannels
-      const newBuffer = context.createBuffer(channelCount, audioBuffer.length, audioBuffer.sampleRate)
-      for (let i = 0; i < channelCount; i++) {
-        const channelData = audioBuffer.getChannelData(i)
-        const reversedData = newBuffer.getChannelData(i)
-        for (let j = 0, k = channelData.length - 1; k >= 0; j++, k--) {
-          reversedData[j] = channelData[k]
-        }
-      }
-      source.buffer = newBuffer
-      const duration = newBuffer.duration
-      gainNode.gain.setValueAtTime(0.3, context.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + duration)
-      source.connect(gainNode)
-      gainNode.connect(context.destination)
-      source.start()
-    } catch (e) {
-      console.error("Reverse audio failed", e)
-    }
+  const playCopySound = () => {
+    const audio = new Audio(SUCCESS_SOUND_URL)
+    audio.volume = 0.3
+    audio.play().catch(() => {})
   }
 
   const handleCopy = (id: string, text: string) => {
