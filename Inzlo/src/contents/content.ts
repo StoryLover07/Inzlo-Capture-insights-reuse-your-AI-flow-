@@ -31,18 +31,14 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   const currentUrl = window.location.href
   const currentDomain = getDomain(currentUrl)
 
-  // 🧠 지능형 우선순위 필터링
-  // 1. 현재 도메인에서 저장된 항목 (최우선)
+  // 🧠 우선순위 필터링 (개수 제한 해제)
   const siteSpecific = prompts.filter(p => p.url && getDomain(p.url) === currentDomain)
-  
-  // 2. 컨텍스트 태그와 일치하는 항목 (차선)
   const contextSpecific = prompts.filter(p => 
     (p.tag || "").toLowerCase() === context.toLowerCase() && 
     !siteSpecific.find(s => s.id === p.id)
   )
 
-  // 3. 결합 및 상위 3개 추출
-  const filtered = [...siteSpecific, ...contextSpecific].slice(0, 3)
+  const filtered = [...siteSpecific, ...contextSpecific] // 모든 항목 포함
 
   if (filtered.length === 0) return
 
@@ -56,13 +52,14 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   panel.id = PANEL_ID
   panel.style.cssText = `
     position: fixed; top: 25px; right: 25px; width: 280px; 
-    background: ${bgColor}; color: ${textColor};
+    max-height: 450px; background: ${bgColor}; color: ${textColor};
     border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,${isDarkMode ? '0.4' : '0.2'}); 
     z-index: 2147483646; padding: 18px; 
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     border: 1px solid ${isDarkMode ? "#333" : "rgba(0,0,0,0.05)"}; 
     animation: inzloFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     transition: opacity 0.5s ease;
+    display: flex; flex-direction: column;
   `
 
   let hideTimer: any = null
@@ -84,11 +81,16 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
     .inzlo-item:hover { background: ${isDarkMode ? "#333" : "#f0f7ff"} !important; border-color: #1890ff !important; transform: translateY(-1px); }
     .inzlo-item:active { transform: scale(0.98); }
     .inzlo-close:hover { background: ${isDarkMode ? "#333" : "#fff1f0"}; color: #ff4d4f !important; }
+    
+    #inzlo-list::-webkit-scrollbar { width: 4px; }
+    #inzlo-list::-webkit-scrollbar-track { background: transparent; }
+    #inzlo-list::-webkit-scrollbar-thumb { background: ${isDarkMode ? "#444" : "#ddd"}; border-radius: 10px; }
+    #inzlo-list::-webkit-scrollbar-thumb:hover { background: #1890ff; }
   `
   document.head.appendChild(styleSheet)
 
   const header = document.createElement("div")
-  header.style.cssText = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;"
+  header.style.cssText = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-shrink: 0;"
   header.innerHTML = `
     <div>
       <div style="font-weight: 900; font-size: 14px; color: #1890ff; display: flex; align-items: center; gap: 4px;">
@@ -102,13 +104,15 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   panel.appendChild(header)
 
   const list = document.createElement("div")
+  list.id = "inzlo-list"
+  list.style.cssText = "overflow-y: auto; flex-grow: 1; padding-right: 4px;"
+  
   filtered.forEach(p => {
     const isSiteSpecific = p.url && getDomain(p.url) === currentDomain
     const item = document.createElement("div")
     item.className = "inzlo-item"
-    item.style.cssText = `padding: 12px; margin-bottom: 8px; background: ${itemBg}; border-radius: 10px; font-size: 12px; color: ${isDarkMode ? "#ccc" : "#444"}; cursor: copy; transition: all 0.2s; border: 1px solid ${isSiteSpecific ? '#1890ff' : borderColor}; line-height: 1.5; position: relative; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;`
+    item.style.cssText = `padding: 12px; margin-bottom: 8px; background: ${itemBg}; border-radius: 10px; font-size: 12px; color: ${isDarkMode ? "#ccc" : "#444"}; cursor: copy; transition: all 0.2s; border: 1px solid ${isSiteSpecific ? '#1890ff' : borderColor}; line-height: 1.5; position: relative; overflow: hidden;`
     
-    // 사이트 맞춤형 뱃지 (옵션)
     if (isSiteSpecific) {
       const badge = document.createElement("div")
       badge.innerText = "Current Site"
