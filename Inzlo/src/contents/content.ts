@@ -72,44 +72,66 @@ const createSuggestionPanel = (prompts: any[], context: string) => {
 // --- ✂️ Selection & Capture Logic ---
 
 const handleMouseUp = (e: MouseEvent) => {
-  const selection = window.getSelection()
-  const text = selection?.toString().trim()
+  // 선택 영역을 가져올 때 약간의 딜레이를 주어 안정성 확보
+  setTimeout(() => {
+    const selection = window.getSelection()
+    const text = selection?.toString().trim()
 
-  // 기존 버튼 제거
-  const oldBtn = document.getElementById(CAPTURE_BTN_ID)
-  if (oldBtn) oldBtn.remove()
-
-  if (text && text.length > 0) {
-    const range = selection.getRangeAt(0)
-    const rect = range.getBoundingClientRect()
-
-    const btn = document.createElement("div")
-    btn.id = CAPTURE_BTN_ID
-    btn.innerText = "Inzlo"
-    btn.style.cssText = `
-      position: fixed;
-      top: ${rect.top + window.scrollY - 35}px;
-      left: ${rect.left + window.scrollX + rect.width / 2 - 25}px;
-      padding: 6px 12px;
-      background: #1890ff;
-      color: white;
-      font-size: 12px;
-      font-weight: bold;
-      border-radius: 20px;
-      cursor: pointer;
-      z-index: 1000000;
-      box-shadow: 0 4px 12px rgba(24,144,255,0.3);
-      animation: inzloFadeIn 0.2s ease;
-    `
-
-    btn.onclick = (event) => {
-      event.stopPropagation()
-      savePrompt(text)
-      btn.innerText = "✅ Saved!"
-      setTimeout(() => btn.remove(), 1000)
+    // 10글자 미만이거나 비어있으면 표시 안 함 (노이즈 방지)
+    if (!text || text.length < 2) {
+      const existing = document.getElementById(CAPTURE_BTN_ID)
+      if (existing) existing.remove()
+      return
     }
-    document.body.appendChild(btn)
-  }
+
+    // 이미 버튼이 있으면 위치만 업데이트하기 위해 제거 후 새로 생성
+    const oldBtn = document.getElementById(CAPTURE_BTN_ID)
+    if (oldBtn) oldBtn.remove()
+
+    try {
+      const range = selection.getRangeAt(0)
+      const rect = range.getBoundingClientRect()
+
+      if (rect.width === 0) return
+
+      const btn = document.createElement("div")
+      btn.id = CAPTURE_BTN_ID
+      btn.innerText = "Inzlo"
+      btn.style.cssText = `
+        position: absolute;
+        top: ${rect.top + window.scrollY - 40}px;
+        left: ${rect.left + window.scrollX + rect.width / 2 - 30}px;
+        padding: 8px 14px;
+        background: #1890ff;
+        color: white;
+        font-size: 12px;
+        font-weight: 800;
+        border-radius: 20px;
+        cursor: pointer;
+        z-index: 2147483647;
+        box-shadow: 0 6px 16px rgba(24,144,255,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: inzloFadeIn 0.2s ease;
+        border: 2px solid white;
+        pointer-events: auto;
+      `
+
+      btn.onmousedown = (event) => event.stopPropagation()
+      btn.onclick = (event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        savePrompt(text)
+        btn.innerText = "✅ Saved!"
+        setTimeout(() => btn.remove(), 1000)
+      }
+      document.body.appendChild(btn)
+      console.log("Inzlo capture button created at:", btn.style.top, btn.style.left)
+    } catch (err) {
+      console.error("Inzlo capture error:", err)
+    }
+  }, 50)
 }
 
 const savePrompt = (content: string) => {
@@ -138,12 +160,6 @@ const init = () => {
 }
 
 document.addEventListener("mouseup", handleMouseUp)
-document.addEventListener("mousedown", (e) => {
-  const btn = document.getElementById(CAPTURE_BTN_ID)
-  if (btn && !btn.contains(e.target as Node)) {
-    btn.remove()
-  }
-})
 
 init()
 
