@@ -224,50 +224,39 @@ export default function Popup() {
         className={`prompt-item ${isCopied ? "glow-item" : ""}`}
         style={{
           position: "relative",
-          border: isSelected ? "2px solid #1890ff" : (isDarkMode ? "1px solid #333" : "1px solid #f0f0f0"),
+          border: isSelected ? "1px solid #1890ff" : (isDarkMode ? "1px solid #333" : "1px solid #f0f0f0"),
           borderRadius: "10px",
-          padding: "12px 12px 24px 36px",
+          padding: "12px 16px 28px 16px", // 👈 padding 최적화
           marginBottom: "10px",
           cursor: "pointer",
           fontSize: "13px",
           lineHeight: "1.5",
-          backgroundColor: isSelected ? (isDarkMode ? "#112233" : "#e6f7ff") : (isDarkMode ? "#1a1a1a" : "#fff"),
+          backgroundColor: isSelected ? (isDarkMode ? "#112233" : "#f0f7ff") : (isDarkMode ? "#1a1a1a" : "#fff"),
           transition: "all 0.2s ease",
-          boxShadow: isCopied ? "none" : "0 2px 4px rgba(0,0,0,0.02)",
+          boxShadow: isSelected ? "0 4px 12px rgba(24, 144, 255, 0.1)" : "0 2px 4px rgba(0,0,0,0.02)",
           display: "flex",
           alignItems: "center",
           minHeight: "50px",
-          overflow: "hidden" // 👈 layer가 안 보이게 숨김
+          overflow: "hidden"
         }}
       >
+        {/* ⚡ Left Edge Highlight Bar */}
         <div
-          className="item-checkbox"
           onClick={(e) => toggleSelect(p.id, e)}
           style={{
             position: "absolute",
-            left: "10px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            width: "18px",
-            height: "18px",
-            borderRadius: "4px",
-            border: isSelected ? "none" : "2px solid #d9d9d9",
+            left: 0,
+            top: 0,
+            width: "6px", // 👈 에지 강조 두께
+            height: "100%",
             backgroundColor: isSelected ? "#1890ff" : "transparent",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             transition: "all 0.2s",
-            opacity: isSelected ? "1" : "0",
-            zIndex: 10
+            cursor: "pointer",
+            zIndex: 30
           }}
-        >
-          {isSelected && (
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          )}
-        </div>
-        
+          title="Select"
+        />
+
         {isCopied ? (
           <div className="blink-text">Copied!</div>
         ) : (
@@ -275,10 +264,11 @@ export default function Popup() {
             <div style={{ width: "100%" }}>
               <div style={{ 
                 fontSize: "10px", 
-                color: "#1890ff", 
+                color: isSelected ? "#1890ff" : "#888", 
                 fontWeight: "bold", 
                 marginBottom: "4px",
-                textTransform: "uppercase"
+                textTransform: "uppercase",
+                transition: "color 0.2s"
               }}>
                 [{p.tag || "General"}]
               </div>
