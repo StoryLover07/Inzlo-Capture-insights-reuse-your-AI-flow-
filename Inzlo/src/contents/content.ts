@@ -305,53 +305,58 @@ const handleMouseUp = (e: MouseEvent) => {
 
 const expandToTagBar = (btn: HTMLElement, text: string) => {
   const context = detectContext(window.location.href)
-  btn.innerHTML = ""
-  btn.style.padding = "6px"
-  btn.style.cursor = "default"
-  btn.style.background = "#000"
-  btn.style.boxShadow = "0 10px 25px rgba(0,0,0,0.5)"
-  
-  const container = document.createElement("div")
-  container.style.cssText = "display: flex; align-items: center; gap: 6px; padding: 0 4px;"
-  
-  const tags = [context, "General", "Email", "Code"]
-  const uniqueTags = [...new Set(tags)]
+  chrome.storage.local.get(["inzlo_prompts"], (res) => {
+    const prompts: Prompt[] = res.inzlo_prompts || []
+    const defaultTags = [context, "General", "AI", "Email", "Code"]
+    const customTags = Array.from(new Set(prompts.map(p => p.tag).filter(t => t && !defaultTags.includes(t))))
+    const allTags = [...defaultTags, ...customTags]
 
-  uniqueTags.forEach(tag => {
-    const chip = document.createElement("div")
-    chip.innerText = tag
-    chip.style.cssText = "padding: 4px 10px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.9);"
-    chip.onmouseover = () => chip.style.background = "rgba(255,255,255,0.3)"
-    chip.onmouseout = () => chip.style.background = "rgba(255,255,255,0.15)"
-    chip.onclick = (e) => {
-      e.stopPropagation()
-      savePrompt(text, tag)
-      showSavedFeedback(btn)
-    }
-    container.appendChild(chip)
-  })
-
-  const input = document.createElement("input")
-  input.placeholder = "+ Custom"
-  input.className = "inzlo-custom-input"
-  input.style.cssText = "width: 75px; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.5); color: #fff; font-size: 11px; outline: none; padding: 2px 4px;"
-  input.onmousedown = (e) => e.stopPropagation()
-  input.onclick = (e) => e.stopPropagation()
-  input.onkeydown = (e) => {
-    e.stopPropagation()
-    if (e.key === "Enter") {
-      e.preventDefault()
-      const val = input.value.trim()
-      if (val) {
-        savePrompt(text, val)
+    btn.innerHTML = ""
+    btn.style.padding = "6px 12px"
+    btn.style.cursor = "default"
+    btn.style.background = "#000"
+    btn.style.maxWidth = "400px" // 👈 너무 길어지지 않게 제한
+    btn.style.boxShadow = "0 10px 25px rgba(0,0,0,0.5)"
+    
+    const scrollContainer = document.createElement("div")
+    scrollContainer.style.cssText = "display: flex; align-items: center; gap: 6px; overflow-x: auto; padding: 2px 0; max-width: 100%; scrollbar-width: none;"
+    scrollContainer.className = "inzlo-tag-scroll"
+    
+    allTags.forEach(tag => {
+      const chip = document.createElement("div")
+      chip.innerText = tag
+      chip.style.cssText = "padding: 4px 10px; background: rgba(255,255,255,0.15); border-radius: 12px; font-size: 11px; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.9); white-space: nowrap;"
+      chip.onmouseover = () => chip.style.background = "rgba(255,255,255,0.3)"
+      chip.onmouseout = () => chip.style.background = "rgba(255,255,255,0.15)"
+      chip.onclick = (e) => {
+        e.stopPropagation()
+        savePrompt(text, tag)
         showSavedFeedback(btn)
       }
-    }
-  }
-  container.appendChild(input)
+      scrollContainer.appendChild(chip)
+    })
 
-  btn.appendChild(container)
-  setTimeout(() => input.focus(), 300)
+    const input = document.createElement("input")
+    input.placeholder = "+ New"
+    input.className = "inzlo-custom-input"
+    input.style.cssText = "min-width: 60px; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.5); color: #fff; font-size: 11px; outline: none; padding: 2px 4px; margin-left: 4px;"
+    input.onmousedown = (e) => e.stopPropagation()
+    input.onclick = (e) => e.stopPropagation()
+    input.onkeydown = (e) => {
+      e.stopPropagation()
+      if (e.key === "Enter") {
+        e.preventDefault()
+        const val = input.value.trim()
+        if (val) {
+          savePrompt(text, val)
+          showSavedFeedback(btn)
+        }
+      }
+    }
+    scrollContainer.appendChild(input)
+    btn.appendChild(scrollContainer)
+    setTimeout(() => input.focus(), 300)
+  })
 }
 
 const showSavedFeedback = (btn: HTMLElement) => {
