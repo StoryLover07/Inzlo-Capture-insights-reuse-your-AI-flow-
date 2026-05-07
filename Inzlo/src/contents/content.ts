@@ -70,6 +70,15 @@ const detectContext = (url: string) => {
   return "General"
 }
 
+const getSpecificAI = (url?: string) => {
+  if (!url) return ""
+  const low = url.toLowerCase()
+  if (low.includes("chatgpt.com") || low.includes("chat.openai.com")) return "ChatGPT"
+  if (low.includes("claude.ai")) return "Claude"
+  if (low.includes("gemini.google.com")) return "Gemini"
+  return ""
+}
+
 const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: boolean, duration: number) => {
   if (isDismissedForSession) return
   const existing = document.getElementById(PANEL_ID)
@@ -221,7 +230,14 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 
       const tagDiv = document.createElement("div")
       tagDiv.className = "inzlo-item-tag"
-      tagDiv.innerText = `[${(p.tag || "General").toUpperCase()}]`
+      
+      let displayTag = `[${(p.tag || "General").toUpperCase()}]`
+      if ((p.tag || "").toLowerCase() === "ai" && p.url) {
+        const specificAI = getSpecificAI(p.url)
+        if (specificAI) displayTag += ` ${specificAI}`
+      }
+      
+      tagDiv.innerText = displayTag
       tagDiv.style.cssText = `font-size: 10px; font-weight: 900; color: #1890ff; margin-bottom: 4px; display: block; letter-spacing: 0.5px;`
       item.appendChild(tagDiv)
 

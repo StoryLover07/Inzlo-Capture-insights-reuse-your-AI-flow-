@@ -256,9 +256,25 @@ export default function Popup() {
     }
   }
 
+  const getSpecificAI = (url?: string) => {
+    if (!url) return ""
+    const low = url.toLowerCase()
+    if (low.includes("chatgpt.com") || low.includes("chat.openai.com")) return "ChatGPT"
+    if (low.includes("claude.ai")) return "Claude"
+    if (low.includes("gemini.google.com")) return "Gemini"
+    return ""
+  }
+
   const renderPromptItem = (p: Prompt) => {
     const isSelected = selectedIds.has(p.id)
     const isCopied = copiedId === p.id
+    
+    let displayTag = `[${(p.tag || "General").toUpperCase()}]`
+    if ((p.tag || "").toLowerCase() === "ai" && p.url) {
+      const specificAI = getSpecificAI(p.url)
+      if (specificAI) displayTag += ` ${specificAI}`
+    }
+
     return (
       <div key={p.id} onClick={() => handleCopy(p.id, p.content)} className={`prompt-item ${isCopied ? "glow-item" : ""}`}
         style={{
@@ -276,7 +292,7 @@ export default function Popup() {
         </div>
         {isCopied ? <div className="blink-text">Copied!</div> : (
           <div style={{ width: "100%" }}>
-            <div style={{ fontSize: "10px", color: isSelected ? "#1890ff" : "#888", fontWeight: "bold", marginBottom: "4px", textTransform: "uppercase" }}>[{p.tag || "General"}]</div>
+            <div style={{ fontSize: "10px", color: isSelected ? "#1890ff" : "#888", fontWeight: "bold", marginBottom: "4px", textTransform: "uppercase" }}>{displayTag}</div>
             <div style={{ overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", wordBreak: "break-all" }}>{p.content}</div>
             {p.source && (
               <a href={p.url} target="_blank" rel="noopener noreferrer" className="source-layer" onClick={(e) => e.stopPropagation()}>
