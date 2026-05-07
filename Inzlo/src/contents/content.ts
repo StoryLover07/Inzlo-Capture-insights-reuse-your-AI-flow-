@@ -283,12 +283,18 @@ const handleMouseUp = (e: MouseEvent) => {
       const rect = range.getBoundingClientRect()
       if (rect.width === 0) return
 
+      let topPos = rect.top + window.scrollY - 45
+      if (topPos < 0) {
+        topPos = rect.bottom + window.scrollY + 10
+      }
+      let leftPos = rect.left + window.scrollX + rect.width / 2 - 30
+
       const btn = document.createElement("div")
       btn.id = CAPTURE_BTN_ID
       btn.innerHTML = `<span>Inzlo</span>`
       btn.style.cssText = `
-        position: absolute; top: ${rect.top + window.scrollY - 45}px;
-        left: ${rect.left + window.scrollX + rect.width / 2 - 30}px;
+        position: absolute; top: ${topPos}px;
+        left: ${leftPos}px;
         padding: 8px 16px; background: #1890ff; color: white;
         font-size: 13px; font-weight: 900; border-radius: 24px;
         cursor: pointer; z-index: 2147483647;
