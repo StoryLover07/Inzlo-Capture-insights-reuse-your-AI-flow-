@@ -1,7 +1,8 @@
 import type { PlasmoCSConfig } from "plasmo"
 
 export const config: PlasmoCSConfig = {
-  matches: ["<all_urls>"]
+  matches: ["<all_urls>"],
+  all_frames: true
 }
 
 type Prompt = {
@@ -387,6 +388,7 @@ const savePrompt = (content: string, tag: string) => {
 // --- 🚀 Initialize ---
 
 const init = () => {
+  if (window !== window.top) return // 👈 iframe 내부에서는 제안 패널 렌더링 방지
   const context = detectContext(window.location.href)
   chrome.storage.local.get(["inzlo_prompts", "inzlo_suggest_enabled", "inzlo_darkmode", "inzlo_suggest_duration", "inzlo_suggest_tagged_only"], (res) => {
     const isSuggestEnabled = res.inzlo_suggest_enabled !== false
