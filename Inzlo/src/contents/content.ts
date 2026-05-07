@@ -97,11 +97,11 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 
   // 2. 다른 사이트의 컨텍스트 일치 항목 (차선책)
   const contextSpecific = prompts.filter(p => 
-    (p.tag || "").toLowerCase() === context.toLowerCase() && 
+    (p.tag || "General").toLowerCase() === context.toLowerCase() && 
     !siteSpecific.find(s => s.id === p.id)
   )
 
-  const filtered = [...siteSpecific, ...contextSpecific]
+  const filtered = [...siteSpecific, ...contextSpecific].slice(0, 5)
   if (filtered.length === 0) return
 
   const bgColor = isDarkMode ? "#1a1a1a" : "#ffffff"
