@@ -96,10 +96,13 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
     })
 
   // 2. 다른 사이트의 컨텍스트 일치 항목 (차선책)
-  const contextSpecific = prompts.filter(p => 
-    (p.tag || "General").toLowerCase() === context.toLowerCase() && 
-    !siteSpecific.find(s => s.id === p.id)
-  )
+  // General 사이트에서는 태그 무관하게 모든 프롬프트를 보여줌
+  const contextSpecific = context === "General"
+    ? prompts.filter(p => !siteSpecific.find(s => s.id === p.id))
+    : prompts.filter(p => 
+        (p.tag || "General").toLowerCase() === context.toLowerCase() && 
+        !siteSpecific.find(s => s.id === p.id)
+      )
 
   const filtered = [...siteSpecific, ...contextSpecific].slice(0, 5)
   if (filtered.length === 0) return
