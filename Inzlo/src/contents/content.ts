@@ -177,6 +177,8 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
     .inzlo-item:active { transform: scale(0.98); }
     .inzlo-close:hover { background: ${isDarkMode ? "#333" : "#fff1f0"}; color: #ff4d4f !important; }
     .inzlo-copied-text { animation: inzloBlink 0.5s ease infinite; font-weight: bold; color: #1890ff; text-align: center; width: 100%; }
+    .inzlo-source-layer { position: absolute; bottom: 0; left: 0; width: 100%; height: 28px; background: rgba(0, 0, 0, 0.75); color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; transform: translateY(100%); transition: transform 0.3s; z-index: 20; text-decoration: none; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
+    .inzlo-item:hover .inzlo-source-layer { transform: translateY(0); }
     
     #inzlo-list::-webkit-scrollbar { width: 4px; }
     #inzlo-list::-webkit-scrollbar-track { background: transparent; }
@@ -245,6 +247,27 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
       contentDiv.innerText = p.content
       item.appendChild(contentDiv)
 
+      if (p.source) {
+        const sourceLayer = document.createElement("a")
+        sourceLayer.href = p.url || "#"
+        sourceLayer.target = "_blank"
+        sourceLayer.rel = "noopener noreferrer"
+        sourceLayer.className = "inzlo-source-layer"
+        sourceLayer.onclick = (e) => e.stopPropagation()
+        
+        let hostname = "local"
+        if (p.url) {
+          try { hostname = new URL(p.url).hostname } catch(e) {}
+        }
+
+        sourceLayer.innerHTML = `
+          <span style="font-weight: bold; color: #1890ff;">${p.source}</span>
+          <span style="opacity: 0.5;">·</span>
+          <span style="opacity: 0.8;">${hostname}</span>
+        `
+        item.appendChild(sourceLayer)
+      }
+
       item.addEventListener("click", () => {
         navigator.clipboard.writeText(p.content)
         playCopySound()
@@ -273,6 +296,15 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   renderList(filtered)
   panel.appendChild(list)
   document.body.appendChild(panel)
+
+  const handleOutsideClick = (e: MouseEvent) => {
+    const target = e.target as HTMLElement
+    if (!panel.contains(target)) {
+      dismissPanel(true)
+      document.removeEventListener("mousedown", handleOutsideClick)
+    }
+  }
+  setTimeout(() => document.addEventListener("mousedown", handleOutsideClick), 100)
 }
 
 // --- ✂️ Selection & Dynamic Tag Bar Logic ---
