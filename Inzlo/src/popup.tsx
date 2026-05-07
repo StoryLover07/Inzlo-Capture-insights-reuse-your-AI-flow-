@@ -407,7 +407,7 @@ export default function Popup() {
                   {recExpanded && <div className="scroll-area" style={{ flex: 1 }}>{recommendedItems.map(p => renderPromptItem(p))}</div>}
                 </div>
               )}
-              {recExpanded && othersExpanded && recommendedItems.length > 0 && otherItems.length > 0 && <div className="resizer-bar" onMouseDown={(e) => { e.preventDefault(); setIsDragging(true); }} />}
+              {recExpanded && othersExpanded && recommendedItems.length > 0 && otherItems.length > 0 && <div className="resizer-bar" onMouseDown={() => { setIsDragging(true); }} />}
               {otherItems.length > 0 && (
                 <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: othersExpanded ? "100px" : "auto" }}>
                   <div className="section-header" onClick={() => { setOthersExpanded(!othersExpanded); playCheckSound(); }}><div style={{ fontSize: "11px", fontWeight: "800", color: "#1890ff", textTransform: "uppercase" }}>NON-RECOMMENDED</div><span className={`arrow-icon ${othersExpanded ? 'arrow-down' : 'arrow-right'}`}>▼</span></div>
