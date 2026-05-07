@@ -45,7 +45,7 @@ export default function Popup() {
      const handleMouseUp = () => setIsDragging(false)
     const closeMenu = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-      if (target.closest('.context-menu')) return
+      if (target?.closest && target.closest('.context-menu')) return
       setContextMenu(null)
     }
 
