@@ -42,9 +42,10 @@ export default function Popup() {
       const newHeight = Math.max(50, Math.min(400, e.clientY - 150))
       setRecHeight(newHeight)
     }
+     const handleMouseUp = () => setIsDragging(false)
     const closeMenu = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-      if (target.closest('.context-menu')) return // 👈 메뉴 내부 클릭시 닫지 않음
+      if (target.closest('.context-menu')) return
       setContextMenu(null)
     }
 
