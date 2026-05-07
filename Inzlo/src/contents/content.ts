@@ -403,13 +403,13 @@ const init = () => {
   })
 }
 
-document.addEventListener("mouseup", handleMouseUp)
+document.addEventListener("mouseup", handleMouseUp, true)
 document.addEventListener("mousedown", (e) => {
   const target = e.target as HTMLElement
   if (target.closest(`#${CAPTURE_BTN_ID}`)) return
   const btn = document.getElementById(CAPTURE_BTN_ID)
   if (btn) btn.remove()
-})
+}, true)
 
 init()
 
