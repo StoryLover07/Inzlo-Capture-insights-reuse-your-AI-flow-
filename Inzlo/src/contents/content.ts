@@ -352,6 +352,12 @@ const handleMouseUp = (e: MouseEvent) => {
 
       btn.onclick = (event) => {
         event.preventDefault(); event.stopPropagation()
+        savePrompt(text, "General")
+        showSavedFeedback(btn)
+      }
+      
+      btn.oncontextmenu = (event) => {
+        event.preventDefault(); event.stopPropagation()
         expandToTagBar(btn, text)
       }
       document.body.appendChild(btn)

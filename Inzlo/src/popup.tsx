@@ -15,7 +15,7 @@ export default function Popup() {
   const [loading, setLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedTag, setSelectedTag] = useState("All")
+  const [selectedTag, setSelectedTag] = useState("Quicklist")
   const [currentContext, setCurrentContext] = useState("ALL")
   const [currentUrl, setCurrentUrl] = useState("") // 👈 현재 탭 URL 상태 추가
   const [showSettings, setShowSettings] = useState(false)
@@ -201,7 +201,7 @@ export default function Popup() {
   const getFilteredItems = (items: Prompt[]) => {
     return items.filter(p => {
       const itemTag = (p.tag || "General").toLowerCase()
-      const matchesTag = selectedTag === "All" || itemTag === selectedTag.toLowerCase()
+      const matchesTag = selectedTag === "All" || selectedTag === "Quicklist" || itemTag === selectedTag.toLowerCase()
       const matchesSearch = p.content.toLowerCase().includes(searchTerm.toLowerCase())
       return matchesTag && matchesSearch
     })
@@ -228,7 +228,7 @@ export default function Popup() {
 
   const otherItems = baseFiltered.filter(p => !recommendedItems.find(r => r.id === p.id))
 
-  const defaultTags = ["All", "General", "AI", "Email", "Code"]
+  const defaultTags = ["Quicklist", "All", "General", "AI", "Email", "Code"]
   const customTags = Array.from(new Set(prompts.map(p => p.tag).filter(t => t && !defaultTags.includes(t))))
   const dynamicTags = [...defaultTags, ...customTags]
 
@@ -401,18 +401,24 @@ export default function Popup() {
           </div>
           {loading ? <div style={{ textAlign: "center", padding: "40px", color: "#999" }}>Loading...</div> : prompts.length === 0 ? <div style={{ textAlign: "center", padding: "40px", color: "#999" }}>No insights yet!</div> : (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px", minHeight: 0 }}>
-              {(recommendedItems.length > 0 || currentContext !== "ALL") && (
-                <div style={{ display: "flex", flexDirection: "column", flex: recExpanded ? (othersExpanded ? "none" : 1) : "none", height: recExpanded && othersExpanded ? `${recHeight}px` : "auto", minHeight: recExpanded ? "80px" : "auto" }}>
-                  <div className="section-header" onClick={() => { setRecExpanded(!recExpanded); playCheckSound(); }}><div style={{ fontSize: "11px", fontWeight: "800", color: "#1890ff", textTransform: "uppercase" }}>Recommended for {currentContext}</div><span className={`arrow-icon ${recExpanded ? 'arrow-down' : 'arrow-right'}`}>▼</span></div>
-                  {recExpanded && <div className="scroll-area" style={{ flex: 1 }}>{recommendedItems.map(p => renderPromptItem(p))}</div>}
-                </div>
-              )}
-              {recExpanded && othersExpanded && recommendedItems.length > 0 && otherItems.length > 0 && <div className="resizer-bar" onMouseDown={(e) => { e.preventDefault(); setIsDragging(true); }} />}
-              {otherItems.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: othersExpanded ? "100px" : "auto" }}>
-                  <div className="section-header" onClick={() => { setOthersExpanded(!othersExpanded); playCheckSound(); }}><div style={{ fontSize: "11px", fontWeight: "800", color: "#1890ff", textTransform: "uppercase" }}>NON-RECOMMENDED</div><span className={`arrow-icon ${othersExpanded ? 'arrow-down' : 'arrow-right'}`}>▼</span></div>
-                  {othersExpanded && <div className="scroll-area" style={{ flex: 1 }}>{otherItems.map(p => renderPromptItem(p))}</div>}
-                </div>
+              {selectedTag === "Quicklist" ? (
+                <div className="scroll-area" style={{ flex: 1 }}>{baseFiltered.map(p => renderPromptItem(p))}</div>
+              ) : (
+                <>
+                  {(recommendedItems.length > 0 || currentContext !== "ALL") && (
+                    <div style={{ display: "flex", flexDirection: "column", flex: recExpanded ? (othersExpanded ? "none" : 1) : "none", height: recExpanded && othersExpanded ? `${recHeight}px` : "auto", minHeight: recExpanded ? "80px" : "auto" }}>
+                      <div className="section-header" onClick={() => { setRecExpanded(!recExpanded); playCheckSound(); }}><div style={{ fontSize: "11px", fontWeight: "800", color: "#1890ff", textTransform: "uppercase" }}>Recommended for {currentContext}</div><span className={`arrow-icon ${recExpanded ? 'arrow-down' : 'arrow-right'}`}>▼</span></div>
+                      {recExpanded && <div className="scroll-area" style={{ flex: 1 }}>{recommendedItems.map(p => renderPromptItem(p))}</div>}
+                    </div>
+                  )}
+                  {recExpanded && othersExpanded && recommendedItems.length > 0 && otherItems.length > 0 && <div className="resizer-bar" onMouseDown={(e) => { e.preventDefault(); setIsDragging(true); }} />}
+                  {otherItems.length > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: othersExpanded ? "100px" : "auto" }}>
+                      <div className="section-header" onClick={() => { setOthersExpanded(!othersExpanded); playCheckSound(); }}><div style={{ fontSize: "11px", fontWeight: "800", color: "#1890ff", textTransform: "uppercase" }}>NON-RECOMMENDED</div><span className={`arrow-icon ${othersExpanded ? 'arrow-down' : 'arrow-right'}`}>▼</span></div>
+                      {othersExpanded && <div className="scroll-area" style={{ flex: 1 }}>{otherItems.map(p => renderPromptItem(p))}</div>}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
