@@ -298,7 +298,7 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
   const handleOutsideClick = (e: MouseEvent) => {
     const target = e.target as HTMLElement
     if (!panel.contains(target)) {
-      dismissPanel(true)
+      dismissPanel(false)
       window.removeEventListener("mousedown", handleOutsideClick, true)
     }
   }
