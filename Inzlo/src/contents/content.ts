@@ -59,6 +59,7 @@ const detectContext = (url: string) => {
 }
 
 const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: boolean, duration: number) => {
+  if (isDismissedForSession) return
   const existing = document.getElementById(PANEL_ID)
   if (existing) existing.remove()
 
@@ -115,6 +116,7 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
 
   let hideTimer: any = null
   const dismissPanel = (force = false) => {
+    if (force) isDismissedForSession = true
     if (!force && panel.matches(':hover')) {
       startTimer()
       return
