@@ -247,21 +247,19 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
       contentDiv.innerText = p.content
       item.appendChild(contentDiv)
 
-      if (p.source) {
+      if (p.url) {
         const sourceLayer = document.createElement("a")
-        sourceLayer.href = p.url || "#"
+        sourceLayer.href = p.url
         sourceLayer.target = "_blank"
         sourceLayer.rel = "noopener noreferrer"
         sourceLayer.className = "inzlo-source-layer"
         sourceLayer.onclick = (e) => e.stopPropagation()
         
         let hostname = "local"
-        if (p.url) {
-          try { hostname = new URL(p.url).hostname } catch(e) {}
-        }
+        try { hostname = new URL(p.url).hostname } catch(e) {}
 
         sourceLayer.innerHTML = `
-          <span style="font-weight: bold; color: #1890ff;">${p.source}</span>
+          <span style="font-weight: bold; color: #1890ff;">${p.source || "Inzlo Capture"}</span>
           <span style="opacity: 0.5;">·</span>
           <span style="opacity: 0.8;">${hostname}</span>
         `
@@ -301,10 +299,10 @@ const createSuggestionPanel = (prompts: any[], context: string, isDarkMode: bool
     const target = e.target as HTMLElement
     if (!panel.contains(target)) {
       dismissPanel(true)
-      document.removeEventListener("mousedown", handleOutsideClick)
+      window.removeEventListener("mousedown", handleOutsideClick, true)
     }
   }
-  setTimeout(() => document.addEventListener("mousedown", handleOutsideClick), 100)
+  setTimeout(() => window.addEventListener("mousedown", handleOutsideClick, true), 100)
 }
 
 // --- ✂️ Selection & Dynamic Tag Bar Logic ---
