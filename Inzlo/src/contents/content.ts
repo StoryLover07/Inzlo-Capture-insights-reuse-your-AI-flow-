@@ -4,7 +4,17 @@ export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"]
 }
 
-let isDismissedForSession = false // 👈 최상단으로 이동하여 오류 방지
+type Prompt = {
+  id: string
+  content: string
+  tag?: string
+  source?: string
+  url?: string
+  title?: string
+  createdAt: number
+}
+
+let isDismissedForSession = false 
 const PANEL_ID = "inzlo-suggestion-panel"
 const CAPTURE_BTN_ID = "inzlo-capture-btn"
 const SUCCESS_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"
